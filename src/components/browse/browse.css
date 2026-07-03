@@ -1,0 +1,230 @@
+.browse-page{
+
+    background:#0f172a;
+
+    min-height:100vh;
+
+    color:white;
+
+    padding:120px 0;
+
+}
+
+/* ---------- HEADER ---------- */
+
+.browse-header{
+
+    text-align:center;
+
+    margin-bottom:60px;
+
+}
+
+.browse-header h1{
+
+    font-size:3rem;
+
+    font-weight:800;
+
+    margin-bottom:18px;
+
+}
+
+.browse-header h1::after{
+
+    content:"";
+
+    display:block;
+
+    width:90px;
+
+    height:5px;
+
+    margin:18px auto 0;
+
+    border-radius:20px;
+
+    background:linear-gradient(
+        90deg,
+        #8b5cf6,
+        #6366f1
+    );
+
+}
+
+.browse-header p{
+
+    color:#94a3b8;
+
+    font-size:1.05rem;
+
+    line-height:1.8;
+
+}
+
+/* ---------- CONTROLS ---------- */
+
+.browse-controls{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:25px;
+
+    margin-bottom:55px;
+
+    flex-wrap:wrap;
+
+}
+
+.search-box{
+
+    flex:1;
+
+    min-width:280px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    background:#1b2436;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:16px;
+
+    padding:16px 20px;
+
+    transition:.35s;
+
+}
+
+.search-box:hover{
+
+    border-color:#8b5cf6;
+
+    box-shadow:0 15px 35px rgba(139,92,246,.18);
+
+}
+
+.search-box svg{
+
+    color:#8b5cf6;
+
+    font-size:1.1rem;
+
+}
+
+.search-box input{
+
+    flex:1;
+
+    border:none;
+
+    outline:none;
+
+    background:transparent;
+
+    color:white;
+
+    font-size:1rem;
+
+}
+
+.search-box input::placeholder{
+
+    color:#94a3b8;
+
+}
+
+/* ---------- DROPDOWN ---------- */
+
+.browse-controls select{
+
+    width:220px;
+
+    background:#1b2436;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    color:white;
+
+    border-radius:16px;
+
+    padding:16px;
+
+    outline:none;
+
+    cursor:pointer;
+
+    transition:.35s;
+
+}
+
+.browse-controls select:hover{
+
+    border-color:#8b5cf6;
+
+}
+
+/* ---------- GRID ---------- */
+
+.browse-grid{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(320px,1fr));
+
+    gap:35px;
+
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media(max-width:768px){
+
+.browse-page{
+
+padding:90px 20px;
+
+}
+
+.browse-header h1{
+
+font-size:2.2rem;
+
+}
+
+.browse-controls{
+
+flex-direction:column;
+
+}
+
+.browse-controls select{
+
+width:100%;
+
+}
+
+}
+
+.results-count{
+
+    color:#94a3b8;
+
+    margin-bottom:25px;
+
+    font-size:1rem;
+
+}
+
+.results-count strong{
+
+    color:#8b5cf6;
+
+}

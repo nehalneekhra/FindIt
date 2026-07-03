@@ -1,0 +1,51 @@
+.progress-bar{
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+    height:5px;
+
+    border-radius:0 8px 8px 0;
+
+    width:0;
+
+    z-index:9999;
+
+    background:linear-gradient(
+        90deg,
+        #8b5cf6,
+        #6366f1,
+        #3b82f6
+    );
+
+    box-shadow:
+    0 0 12px rgba(139,92,246,.7);
+
+    transition:width .08s linear;
+
+    animation:gradientMove 4s linear infinite;
+
+    background-size:300%;
+
+
+
+}
+
+@keyframes gradientMove{
+
+0%{
+
+background-position:0%;
+
+}
+
+100%{
+
+background-position:300%;
+
+}
+
+}

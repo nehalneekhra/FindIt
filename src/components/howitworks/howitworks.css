@@ -1,0 +1,291 @@
+.how-it-works{
+
+    background:#111827;
+
+    padding:120px 0;
+
+    color:white;
+
+    overflow:hidden;
+
+}
+
+/* ---------- HEADER ---------- */
+
+.how-header{
+
+    text-align:center;
+
+    max-width:700px;
+
+    margin:0 auto 80px;
+
+}
+
+.how-tag{
+
+    display:inline-block;
+
+    padding:10px 22px;
+
+    border-radius:50px;
+
+    background:rgba(139,92,246,.12);
+
+    border:1px solid rgba(139,92,246,.25);
+
+    color:#c4b5fd;
+
+    font-weight:700;
+
+    margin-bottom:22px;
+
+}
+
+.how-header h2{
+
+    font-size:3rem;
+
+    font-weight:800;
+
+    margin-bottom:18px;
+
+}
+
+.how-header h2::after{
+
+    content:"";
+
+    display:block;
+
+    width:90px;
+
+    height:5px;
+
+    margin:18px auto 0;
+
+    border-radius:50px;
+
+    background:linear-gradient(
+        90deg,
+        #8b5cf6,
+        #6366f1
+    );
+
+}
+
+.how-header p{
+
+    color:#94a3b8;
+
+    font-size:1.08rem;
+
+    line-height:1.8;
+
+}
+
+/* ---------- GRID ---------- */
+
+.steps-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:30px;
+
+    position:relative;
+
+}
+
+/* ---------- CARD ---------- */
+
+.step-card{
+
+    position:relative;
+
+    background:#1b2436;
+
+    border-radius:24px;
+
+    padding:45px 30px;
+
+    text-align:center;
+
+    border:1px solid rgba(255,255,255,.06);
+
+    transition:.35s;
+
+    overflow:hidden;
+
+}
+
+.step-card:hover{
+
+    transform:translateY(-12px);
+
+    border-color:#8b5cf6;
+
+    box-shadow:0 20px 40px rgba(139,92,246,.18);
+
+}
+
+/* glowing top line */
+
+.step-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+
+    top:0;
+
+    width:100%;
+
+    height:4px;
+
+    background:linear-gradient(
+        90deg,
+        #8b5cf6,
+        #6366f1
+    );
+
+    transform:scaleX(0);
+
+    transition:.35s;
+
+}
+
+.step-card:hover::before{
+
+    transform:scaleX(1);
+
+}
+
+/* ---------- ICON ---------- */
+
+.step-icon{
+
+    width:80px;
+
+    height:80px;
+
+    margin:auto;
+
+    margin-bottom:25px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:2rem;
+
+    color:#8b5cf6;
+
+    background:rgba(139,92,246,.12);
+
+    transition:.35s;
+
+}
+
+.step-card:hover .step-icon{
+
+    transform:rotate(8deg) scale(1.08);
+
+    background:#8b5cf6;
+
+    color:white;
+
+}
+
+/* ---------- TEXT ---------- */
+
+.step-card h3{
+
+    font-size:1.45rem;
+
+    margin-bottom:18px;
+
+    font-weight:700;
+
+}
+
+.step-card p{
+
+    color:#94a3b8;
+
+    line-height:1.8;
+
+}
+
+/* ---------- CONNECTING LINE ---------- */
+
+.step-card:not(:last-child)::after{
+
+    content:"";
+
+    position:absolute;
+
+    top:40px;
+
+    right:-45px;
+
+    width:60px;
+
+    height:2px;
+
+    background:linear-gradient(
+        90deg,
+        #8b5cf6,
+        transparent
+    );
+
+    opacity:.45;
+
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media(max-width:992px){
+
+.steps-grid{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+.step-card::after{
+
+display:none;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.how-it-works{
+
+padding:90px 20px;
+
+}
+
+.how-header h2{
+
+font-size:2.2rem;
+
+}
+
+.steps-grid{
+
+grid-template-columns:1fr;
+
+}
+
+}
