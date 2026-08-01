@@ -10,6 +10,8 @@ import ReportFound from "./pages/reportfound";
 import ItemDetails from "./pages/itemdetails";
 import Profile from "./pages/profile";
 import NotFound from "./pages/notfound";
+import Search from "./pages/search";
+import Notifications from "./pages/notifications";
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
       <Route path="/item/:id" element={<ItemDetails />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<NotFound />} />
+      <Route path="/search" element={<Search />} />
+      <Route path="/notifications"element={<Notifications/>}/>
     </Routes>
   );
 }

@@ -1,0 +1,362 @@
+/* ===========================
+NOTIFICATION PAGE
+=========================== */
+
+.notification-page{
+
+    min-height:100vh;
+
+    padding:120px 6% 80px;
+
+    background:
+    radial-gradient(circle at top left,#7c3aed22,transparent 40%),
+    radial-gradient(circle at bottom right,#8b5cf622,transparent 45%),
+    linear-gradient(135deg,#0f172a,#1b2240,#261f56);
+
+}
+
+.notification-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:45px;
+
+    gap:20px;
+
+    flex-wrap:wrap;
+
+}
+
+.notification-header h1{
+
+    color:white;
+
+    font-size:2.8rem;
+
+    font-weight:800;
+
+}
+
+.notification-header p{
+
+    color:#bfc5d8;
+
+    margin-top:10px;
+
+}
+
+.notification-actions{
+
+    display:flex;
+
+    gap:15px;
+
+}
+
+.notification-actions button{
+
+    border:none;
+
+    cursor:pointer;
+
+    border-radius:14px;
+
+    padding:14px 24px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.notification-actions button:first-child{
+
+    background:linear-gradient(135deg,#8b5cf6,#6d28d9);
+
+    color:white;
+
+}
+
+.notification-actions button:first-child:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 15px 30px rgba(139,92,246,.35);
+
+}
+
+.delete-btn{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    background:rgba(255,255,255,.08);
+
+    color:white;
+
+    border:1px solid rgba(255,255,255,.08);
+
+}
+
+.delete-btn:hover{
+
+    background:#ef4444;
+
+}
+
+/* ===========================
+NOTIFICATION LIST
+=========================== */
+
+.notification-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:22px;
+
+}
+
+/* ===========================
+CARD
+=========================== */
+
+.notification-card{
+
+    position:relative;
+
+    display:flex;
+
+    align-items:flex-start;
+
+    gap:25px;
+
+    background:rgba(255,255,255,.05);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:20px;
+
+    padding:24px;
+
+    backdrop-filter:blur(18px);
+
+    transition:.35s;
+
+}
+
+.notification-card:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:0 20px 35px rgba(0,0,0,.25);
+
+}
+
+.notification-card.unread{
+
+    border-left:5px solid #8b5cf6;
+
+}
+
+/* ===========================
+ICON
+=========================== */
+
+.notification-icon{
+
+    width:60px;
+
+    height:60px;
+
+    border-radius:18px;
+
+    background:rgba(139,92,246,.18);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:#8b5cf6;
+
+    font-size:24px;
+
+    flex-shrink:0;
+
+}
+
+/* ===========================
+CONTENT
+=========================== */
+
+.notification-content{
+
+    flex:1;
+
+}
+
+.notification-top{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:20px;
+
+    align-items:center;
+
+    margin-bottom:12px;
+
+}
+
+.notification-top h3{
+
+    color:white;
+
+    font-size:1.2rem;
+
+    font-weight:700;
+
+}
+
+.notification-top span{
+
+    color:#aeb6cf;
+
+    font-size:.9rem;
+
+    white-space:nowrap;
+
+}
+
+.notification-content p{
+
+    color:#c4cadb;
+
+    line-height:1.7;
+
+}
+
+/* ===========================
+UNREAD DOT
+=========================== */
+
+.notification-dot{
+
+    position:absolute;
+
+    top:24px;
+
+    right:24px;
+
+    width:12px;
+
+    height:12px;
+
+    border-radius:50%;
+
+    background:#8b5cf6;
+
+    box-shadow:0 0 15px #8b5cf6;
+
+    animation:pulseDot 1.8s infinite;
+
+}
+
+@keyframes pulseDot{
+
+    0%{
+
+        transform:scale(1);
+
+        opacity:1;
+
+    }
+
+    50%{
+
+        transform:scale(1.4);
+
+        opacity:.6;
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+        opacity:1;
+
+    }
+
+}
+
+/* ===========================
+RESPONSIVE
+=========================== */
+
+@media(max-width:768px){
+
+.notification-header{
+
+flex-direction:column;
+
+align-items:flex-start;
+
+}
+
+.notification-actions{
+
+width:100%;
+
+flex-direction:column;
+
+}
+
+.notification-actions button{
+
+width:100%;
+
+justify-content:center;
+
+}
+
+.notification-card{
+
+flex-direction:column;
+
+}
+
+.notification-top{
+
+flex-direction:column;
+
+align-items:flex-start;
+
+}
+
+.notification-dot{
+
+top:18px;
+
+right:18px;
+
+}
+
+.notification-header h1{
+
+font-size:2.2rem;
+
+}
+
+}

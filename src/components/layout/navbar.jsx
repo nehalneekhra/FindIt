@@ -421,29 +421,25 @@ Login
 
 <div className="navbar-actions">
 
-<button
-
-className="icon-btn"
-
+<Link
+    to="/search"
+    className="icon-btn"
 >
-
-<FaSearch/>
-
-</button>
+    <FaSearch/>
+</Link>
 
 <li className="nav-item">
 
-<button
-
+<Link
+to="/notifications"
 className="icon-btn notification-btn"
-
 >
 
 <FaBell/>
 
 <span className="notification-dot"></span>
 
-</button>
+</Link>
 
 </li>
 
