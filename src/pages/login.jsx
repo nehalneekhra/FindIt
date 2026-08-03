@@ -1,3 +1,4 @@
+import { loginUser } from "../services/authService";
 import "../components/login/login.css";
 
 import Navbar from "../components/layout/navbar";
@@ -6,6 +7,7 @@ import Footer from "../components/footer/footer";
 import { motion } from "framer-motion";
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
 
@@ -22,6 +24,7 @@ FaGoogle
 } from "react-icons/fa";
 
 export default function Login(){
+    const navigate = useNavigate();
 
 const[showPassword,setShowPassword]=useState(false);
 
@@ -47,11 +50,33 @@ setFormData({
 
 };
 
-const handleSubmit=(e)=>{
+const handleSubmit = async (e) => {
 
-e.preventDefault();
+    e.preventDefault();
 
-alert("Login Successful!");
+    const response = await loginUser({
+        email: formData.email,
+        password: formData.password,
+    });
+
+    if (response.success) {
+
+        localStorage.setItem("token", response.token);
+
+        localStorage.setItem(
+            "user",
+            JSON.stringify(response.user)
+        );
+
+        alert("Login Successful!");
+
+        navigate("/");
+
+    } else {
+
+        alert(response.message);
+
+    }
 
 };
 

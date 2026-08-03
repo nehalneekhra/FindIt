@@ -1,3 +1,4 @@
+import { signupUser } from "../services/authService";
 import "../components/signup/signup.css";
 
 import Navbar from "../components/layout/navbar";
@@ -5,7 +6,7 @@ import Footer from "../components/footer/footer";
 
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   FaUser,
@@ -20,6 +21,7 @@ import {
 } from "react-icons/fa";
 
 export default function Signup() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -42,21 +44,40 @@ export default function Signup() {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
 
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match.");
-      return;
-    }
+  e.preventDefault();
 
-    if (!formData.agree) {
-      alert("Please accept the Terms & Conditions.");
-      return;
-    }
+  if (formData.password !== formData.confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
+
+  if (!formData.agree) {
+    alert("Please accept the Terms & Conditions.");
+    return;
+  }
+
+  const response = await signupUser({
+    name: formData.fullname,
+    email: formData.email,
+    password: formData.password,
+    phone: formData.phone,
+  });
+
+  if (response.success) {
 
     alert("Account Created Successfully!");
-  };
+
+    navigate("/login");
+
+  } else {
+
+    alert(response.message);
+
+  }
+
+};
 
   return (
     <>

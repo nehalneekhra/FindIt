@@ -1,5 +1,5 @@
 import "../components/reportlost/reportlost.css";
-
+import { reportLostItem } from "../services/lostService";
 import Navbar from "../components/layout/navbar";
 import Footer from "../components/footer/footer";
 
@@ -66,13 +66,53 @@ export default function ReportLost() {
 
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
 
-    e.preventDefault();
+  e.preventDefault();
 
-    alert("Report Submitted Successfully!");
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  };
+  const response = await reportLostItem({
+
+    title: formData.title,
+
+    description: formData.description,
+
+    category: formData.category,
+
+    location: formData.location,
+
+    dateLost: formData.date,
+
+    reportedBy: user._id
+
+  });
+
+  if (response.success) {
+
+    alert("Lost Item Reported Successfully!");
+
+    setFormData({
+      title: "",
+      category: "",
+      location: "",
+      date: "",
+      description: "",
+      reward: "",
+      phone: "",
+      email: ""
+    });
+
+    setImage(null);
+    setPreview("");
+
+  } else {
+
+    alert(response.message);
+
+  }
+
+};
 
   return (
 

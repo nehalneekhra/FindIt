@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-
+import ProtectedRoute from "./utils/ProtectedRoute";
 import Home from "./pages/home";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
@@ -19,15 +19,55 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/browse/:type" element={<Browse />} />
-      <Route path="/report-lost" element={<ReportLost />} />
-      <Route path="/report-found" element={<ReportFound />} />
       <Route path="/item/:id" element={<ItemDetails />} />
-      <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<NotFound />} />
       <Route path="/search" element={<Search />} />
-      <Route path="/notifications"element={<Notifications/>}/>
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            {" "}
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/report-lost"
+        element={
+          <ProtectedRoute>
+            <ReportLost />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/report-found"
+        element={
+          <ProtectedRoute>
+            <ReportFound />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <Notifications />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
