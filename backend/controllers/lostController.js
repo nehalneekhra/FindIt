@@ -4,13 +4,16 @@ const reportLostItem = async (req, res) => {
     try {
 
         const {
-            title,
-            description,
-            category,
-            location,
-            dateLost,
-            reportedBy
-        } = req.body;
+    title,
+    description,
+    category,
+    location,
+    dateLost,
+    reward,
+    phone,
+    email,
+    reportedBy
+} = req.body;
 
         // Validation
         if (
@@ -27,14 +30,22 @@ const reportLostItem = async (req, res) => {
             });
         }
 
-        const lostItem = await LostItem.create({
-            title,
-            description,
-            category,
-            location,
-            dateLost,
-            reportedBy
-        });
+        const image = req.file
+    ? `/uploads/${req.file.filename}`
+    : "";
+
+const lostItem = await LostItem.create({
+    title,
+    description,
+    category,
+    location,
+    dateLost,
+    reward,
+    phone,
+    email,
+    image,
+    reportedBy
+});
 
         res.status(201).json({
             success: true,

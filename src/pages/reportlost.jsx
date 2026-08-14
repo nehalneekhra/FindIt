@@ -68,49 +68,56 @@ export default function ReportLost() {
 
   const handleSubmit = async (e) => {
 
-  e.preventDefault();
+    e.preventDefault();
 
-  const user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(localStorage.getItem("user"));
 
-  const response = await reportLostItem({
+    if (!user) {
+        alert("Please login first.");
+        return;
+    }
 
-    title: formData.title,
+    const data = new FormData();
 
-    description: formData.description,
+    data.append("title", formData.title);
+    data.append("description", formData.description);
+    data.append("category", formData.category);
+    data.append("location", formData.location);
+    data.append("dateLost", formData.date);
+    data.append("reward", formData.reward);
+    data.append("phone", formData.phone);
+    data.append("email", formData.email);
+    data.append("reportedBy", user._id);
 
-    category: formData.category,
+    if (image) {
+        data.append("image", image);
+    }
 
-    location: formData.location,
+    const response = await reportLostItem(data);
 
-    dateLost: formData.date,
+    if (response.success) {
 
-    reportedBy: user._id
+        alert("Lost Item Reported Successfully!");
 
-  });
+        setFormData({
+            title: "",
+            category: "",
+            location: "",
+            date: "",
+            description: "",
+            reward: "",
+            phone: "",
+            email: ""
+        });
 
-  if (response.success) {
+        setImage(null);
+        setPreview("");
 
-    alert("Lost Item Reported Successfully!");
+    } else {
 
-    setFormData({
-      title: "",
-      category: "",
-      location: "",
-      date: "",
-      description: "",
-      reward: "",
-      phone: "",
-      email: ""
-    });
+        alert(response.message);
 
-    setImage(null);
-    setPreview("");
-
-  } else {
-
-    alert(response.message);
-
-  }
+    }
 
 };
 

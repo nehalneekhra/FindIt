@@ -7,221 +7,200 @@ import { motion } from "framer-motion";
 import ItemModal from "../modal/itemmodal";
 
 import {
-
-FaHeart,
-
-FaRegHeart,
-
-FaMapMarkerAlt,
-
-FaClock,
-
-FaUser,
-
-FaArrowRight
-
+    FaHeart,
+    FaRegHeart,
+    FaMapMarkerAlt,
+    FaCalendarAlt,
+    FaArrowRight
 } from "react-icons/fa";
+
 
 export default function BrowseCard({ item, type }) {
 
-const [favorite,setFavorite]=useState(false);
+    const [favorite, setFavorite] = useState(false);
 
-const [open,setOpen]=useState(false);
+    const [open, setOpen] = useState(false);
 
-return(
 
-<>
+    /*
+     * MongoDB stores different date fields
+     * for lost and found items.
+     */
+    const itemDate =
+        type === "lost"
+            ? item.dateLost
+            : item.dateFound;
 
-<motion.div
 
-className="browse-card"
+    /*
+     * Format date nicely for the card.
+     */
+    const formattedDate = itemDate
+        ? new Date(itemDate).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        })
+        : "Date not available";
 
-whileHover={{
 
-y:-10,
+    /*
+     * Use a fallback image if the user
+     * did not upload an image.
+     */
+    const imageSrc =
+        item.image && item.image.trim() !== ""
+            ? item.image
+            : "/placeholder-item.png";
 
-scale:1.02
 
-}}
+    return (
 
-transition={{
+        <>
 
-duration:.25
+            <motion.div
 
-}}
+                className="browse-card"
 
->
+                whileHover={{
+                    y: -10,
+                    scale: 1.02
+                }}
 
-<div
+                transition={{
+                    duration: 0.25
+                }}
 
-className="browse-image"
+            >
 
-onClick={()=>setOpen(true)}
+                {/* IMAGE */}
 
->
+                <div
+                    className="browse-image"
+                    onClick={() => setOpen(true)}
+                >
 
-<img
+                    <img
+                        src={imageSrc}
+                        alt={item.title || "Item"}
+                    />
 
-src={item.image}
 
-alt={item.title}
+                    {/* FAVORITE */}
 
-/>
+                    <button
 
-<button
+                        className={`browse-favorite ${type}`}
 
-className={`browse-favorite ${type}`}
+                        onClick={(e) => {
 
-onClick={(e)=>{
+                            e.stopPropagation();
 
-e.stopPropagation();
+                            setFavorite(!favorite);
 
-setFavorite(!favorite);
+                        }}
 
-}}
+                    >
 
->
+                        {favorite
+                            ? <FaHeart />
+                            : <FaRegHeart />
+                        }
 
-{
+                    </button>
 
-favorite
 
-?
+                    {/* STATUS */}
 
-<FaHeart/>
+                    <span
+                        className={`browse-status ${type}`}
+                    >
 
-:
+                        {type === "lost"
+                            ? "LOST"
+                            : "FOUND"
+                        }
 
-<FaRegHeart/>
+                    </span>
 
-}
+                </div>
 
-</button>
 
-<span
+                {/* CONTENT */}
 
-className={`browse-status ${type}`}
+                <div className="browse-content">
 
->
+                    <h3>
+                        {item.title}
+                    </h3>
 
-{
 
-type==="lost"
+                    {/* LOCATION + DATE */}
 
-?
+                    <div className="browse-info">
 
-"LOST"
+                        <span>
 
-:
+                            <FaMapMarkerAlt />
 
-"FOUND"
+                            {item.location || "Location unavailable"}
 
-}
+                        </span>
 
-</span>
 
-</div>
+                        <span>
 
-<div className="browse-content">
+                            <FaCalendarAlt />
 
-<h3>
+                            {formattedDate}
 
-{item.title}
+                        </span>
 
-</h3>
+                    </div>
 
-<div className="browse-info">
 
-<span>
+                    {/* CATEGORY */}
 
-<FaMapMarkerAlt/>
+                    <div className="browse-category">
 
-{item.location}
+                        {item.category || "Other"}
 
-</span>
+                    </div>
 
-{
 
-type==="lost"
+                    {/* VIEW DETAILS */}
 
-?
+                    <button
 
-(
+                        className="browse-btn"
 
-<span>
+                        onClick={() => setOpen(true)}
 
-<FaClock/>
+                    >
 
-{item.time}
+                        View Details
 
-</span>
+                        <FaArrowRight />
 
-)
+                    </button>
 
-:
+                </div>
 
-(
+            </motion.div>
 
-<span>
 
-<FaUser/>
+            {/* MODAL */}
 
-{item.finder}
+            <ItemModal
 
-</span>
+                item={open ? item : null}
 
-)
+                onClose={() => setOpen(false)}
 
-}
+            />
 
-</div>
+        </>
 
-<div className="browse-category">
-
-{item.category}
-
-</div>
-
-<button
-
-className="browse-btn"
-
-onClick={()=>setOpen(true)}
-
->
-
-View Details
-
-<FaArrowRight/>
-
-</button>
-
-</div>
-
-</motion.div>
-
-<ItemModal
-
-item={
-
-open
-
-?
-
-item
-
-:
-
-null
-
-}
-
-onClose={()=>setOpen(false)}
-
-/>
-
-</>
-
-)
+    );
 
 }
