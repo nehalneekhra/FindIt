@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api/lost";
+const BASE_URL = "http://localhost:5001/api/lost";
 
 export const reportLostItem = async (itemData) => {
     try {

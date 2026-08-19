@@ -78,7 +78,7 @@ const getAllLostItems = async (req, res) => {
             lostItems
         });
 
-    } catch (error) {
+    } catch {
 
         res.status(500).json({
             success: false,
@@ -107,7 +107,7 @@ const getLostItemById = async (req, res) => {
             lostItem
         });
 
-    } catch (error) {
+    } catch  {
 
         res.status(500).json({
             success: false,

@@ -70,7 +70,7 @@ const getAllFoundItems = async (req, res) => {
             foundItems
         });
 
-    } catch (error) {
+    } catch {
 
         res.status(500).json({
             success: false,
@@ -99,7 +99,7 @@ const getFoundItemById = async (req, res) => {
             foundItem
         });
 
-    } catch (error) {
+    } catch {
 
         res.status(500).json({
             success: false,
