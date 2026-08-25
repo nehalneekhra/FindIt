@@ -20,6 +20,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/browse/:type" element={<Browse />} />
+      <Route path="/browse" element={<Browse />} />
       <Route path="/item/:id" element={<ItemDetails />} />
       <Route path="*" element={<NotFound />} />
       <Route path="/search" element={<Search />} />

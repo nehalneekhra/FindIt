@@ -4,56 +4,49 @@ import Navbar from "../components/layout/navbar";
 import Footer from "../components/footer/footer";
 import BrowseCard from "../components/browse/browsecard";
 
-import {
-    getLostItems,
-    getFoundItems
-} from "../services/itemService";
+import { getAllItems } from "../services/itemService";
 
-import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { FaSearch } from "react-icons/fa";
 
+
 export default function Browse() {
 
-    const { type } = useParams();
-
     const [items, setItems] = useState([]);
+
     const [search, setSearch] = useState("");
+
     const [category, setCategory] = useState("All");
 
     const [loading, setLoading] = useState(true);
+
     const [error, setError] = useState("");
 
+
     /*
-     * Fetch items from backend
+     * Fetch ALL lost and found items
      */
+
     useEffect(() => {
 
         const fetchItems = async () => {
 
             setLoading(true);
+
             setError("");
 
-            // Reset category when switching between
-            // lost and found pages
             setCategory("All");
+
 
             try {
 
-                const response =
-                    type === "lost"
-                        ? await getLostItems()
-                        : await getFoundItems();
+                const response = await getAllItems();
+
 
                 if (response.success) {
 
-                    const fetchedItems =
-                        type === "lost"
-                            ? response.lostItems
-                            : response.foundItems;
-
-                    setItems(fetchedItems || []);
+                    setItems(response.items || []);
 
                 } else {
 
@@ -72,7 +65,9 @@ export default function Browse() {
 
                 setItems([]);
 
-                setError("Unable to load items.");
+                setError(
+                    "Unable to load items."
+                );
 
             } finally {
 
@@ -82,14 +77,16 @@ export default function Browse() {
 
         };
 
+
         fetchItems();
 
-    }, [type]);
+    }, []);
 
 
     /*
      * Create category list
      */
+
     const categories = [
         "All",
         ...new Set(
@@ -103,26 +100,35 @@ export default function Browse() {
     /*
      * Search + category filtering
      */
+
     const filteredItems = items.filter(item => {
 
         const title =
             item.title?.toLowerCase() || "";
 
+
         const location =
             item.location?.toLowerCase() || "";
 
+
         const searchText =
             search.toLowerCase();
+
 
         const matchesSearch =
             title.includes(searchText) ||
             location.includes(searchText);
 
+
         const matchesCategory =
             category === "All" ||
             item.category === category;
 
-        return matchesSearch && matchesCategory;
+
+        return (
+            matchesSearch &&
+            matchesCategory
+        );
 
     });
 
@@ -133,25 +139,22 @@ export default function Browse() {
 
             <Navbar />
 
+
             <section className="browse-page">
 
                 <div className="container">
+
 
                     {/* HEADER */}
 
                     <div className="browse-header">
 
                         <h1>
-
-                            {type === "lost"
-                                ? "Browse Lost Items"
-                                : "Browse Found Items"
-                            }
-
+                            Browse Items
                         </h1>
 
                         <p>
-                            Search and filter items across campus.
+                            Search and discover lost and found items across campus.
                         </p>
 
                     </div>
@@ -161,41 +164,56 @@ export default function Browse() {
 
                     <div className="browse-controls">
 
+
                         <div className="search-box">
 
                             <FaSearch />
 
                             <input
+
                                 type="text"
+
                                 placeholder="Search items..."
+
                                 value={search}
+
                                 onChange={(e) =>
                                     setSearch(e.target.value)
                                 }
+
                             />
 
                         </div>
 
 
                         <select
+
                             value={category}
+
                             onChange={(e) =>
                                 setCategory(e.target.value)
                             }
+
                         >
 
                             {categories.map(cat => (
 
                                 <option
+
                                     key={cat}
+
                                     value={cat}
+
                                 >
+
                                     {cat}
+
                                 </option>
 
                             ))}
 
                         </select>
+
 
                     </div>
 
@@ -205,7 +223,9 @@ export default function Browse() {
                     {loading && (
 
                         <p className="results-count">
+
                             Loading items...
+
                         </p>
 
                     )}
@@ -216,7 +236,9 @@ export default function Browse() {
                     {!loading && error && (
 
                         <p className="results-count">
+
                             {error}
+
                         </p>
 
                     )}
@@ -250,12 +272,17 @@ export default function Browse() {
                             filteredItems.map(item => (
 
                                 <BrowseCard
+
                                     key={item._id}
+
                                     item={item}
-                                    type={type}
+
+                                    type={item.type}
+
                                 />
 
                             ))
+
                         }
 
                     </div>
@@ -268,15 +295,20 @@ export default function Browse() {
                         filteredItems.length === 0 && (
 
                             <p className="results-count">
-                                No {type} items found.
+
+                                No items found.
+
                             </p>
 
                         )
+
                     }
+
 
                 </div>
 
             </section>
+
 
             <Footer />
 

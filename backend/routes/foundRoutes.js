@@ -8,7 +8,13 @@ const {
     getFoundItemById
 } = require("../controllers/foundController");
 
-router.post("/report", reportFoundItem);
+const upload = require("../config/upload");
+
+router.post(
+    "/report",
+    upload.single("image"),
+    reportFoundItem
+);
 
 router.get("/", getAllFoundItems);
 

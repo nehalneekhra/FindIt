@@ -21,36 +21,47 @@ const reportFoundItem = async (req, res) => {
             !dateFound ||
             !reportedBy
         ) {
+
             return res.status(400).json({
                 success: false,
                 message: "Please fill all required fields"
             });
+
         }
 
+        const image = req.file
+            ? `/uploads/${req.file.filename}`
+            : "";
+
         const foundItem = await FoundItem.create({
+
             title,
             description,
             category,
             location,
             dateFound,
+            image,
             reportedBy
+
         });
 
         res.status(201).json({
+
             success: true,
             message: "Found Item Reported Successfully",
             foundItem
+
         });
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.log(error);
 
         res.status(500).json({
+
             success: false,
             message: "Server Error"
+
         });
 
     }

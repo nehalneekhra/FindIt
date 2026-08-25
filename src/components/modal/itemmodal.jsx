@@ -1,172 +1,255 @@
 import "./itemmodal.css";
 
 import { motion, AnimatePresence } from "framer-motion";
+
 import {
-  FaTimes,
-  FaMapMarkerAlt,
-  FaClock,
-  FaUser,
-  FaTag
+    FaTimes,
+    FaMapMarkerAlt,
+    FaCalendarAlt,
+    FaUser,
+    FaTag
 } from "react-icons/fa";
 
-export default function ItemModal({ item, onClose }) {
+export default function ItemModal({ item, type, onClose }) {
 
-  if (!item) return null;
+    if (!item) return null;
 
-  return (
+    // Backend image URL
+    const imageSrc =
+        item.image && item.image.trim() !== ""
+            ? item.image.startsWith("http")
+                ? item.image
+                : `http://localhost:5001${item.image}`
+            : "/placeholder-item.png";
 
-    <AnimatePresence>
 
-      <motion.div
+    // Lost and Found use different date fields
+    const itemDate =
+        type === "lost"
+            ? item.dateLost
+            : item.dateFound;
 
-        className="modal-overlay"
 
-        initial={{ opacity: 0 }}
+    // Format date
+    const formattedDate = itemDate
+        ? new Date(itemDate).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        })
+        : "Date not available";
 
-        animate={{ opacity: 1 }}
 
-        exit={{ opacity: 0 }}
+    // Get reporter information
+    const reporterName =
+        item.reportedBy?.name ||
+        item.finder ||
+        "Not available";
 
-        onClick={onClose}
 
-      >
+    const reporterEmail =
+        item.reportedBy?.email ||
+        item.email ||
+        "";
 
-        <motion.div
 
-          className="modal-box"
+    return (
 
-          initial={{ scale: .85, opacity: 0 }}
+        <AnimatePresence>
 
-          animate={{ scale: 1, opacity: 1 }}
+            <motion.div
 
-          exit={{ scale: .85, opacity: 0 }}
+                className="modal-overlay"
 
-          transition={{ duration: .3 }}
+                initial={{ opacity: 0 }}
 
-          onClick={(e) => e.stopPropagation()}
+                animate={{ opacity: 1 }}
 
-        >
+                exit={{ opacity: 0 }}
 
-          <button
+                onClick={onClose}
 
-            className="close-btn"
+            >
 
-            onClick={onClose}
+                <motion.div
 
-          >
+                    className="modal-box"
 
-            <FaTimes />
+                    initial={{
+                        scale: 0.85,
+                        opacity: 0
+                    }}
 
-          </button>
+                    animate={{
+                        scale: 1,
+                        opacity: 1
+                    }}
 
-          <motion.img
+                    exit={{
+                        scale: 0.85,
+                        opacity: 0
+                    }}
 
-    src={item.image}
+                    transition={{
+                        duration: 0.3
+                    }}
 
-    alt={item.title}
+                    onClick={(e) =>
+                        e.stopPropagation()
+                    }
 
-    className="modal-image"
+                >
 
-    initial={{scale:1.1}}
+                    {/* CLOSE BUTTON */}
 
-    animate={{scale:1}}
+                    <button
 
-    transition={{duration:.6}}
+                        className="close-btn"
 
-/>
+                        onClick={onClose}
 
-          <div className="modal-content">
+                    >
 
-            <h2>
+                        <FaTimes />
 
-              {item.title}
+                    </button>
 
-            </h2>
 
-            <div className="modal-info">
+                    {/* IMAGE */}
 
-              <span>
+                    <motion.img
 
-                <FaMapMarkerAlt />
+                        src={imageSrc}
 
-                {item.location}
+                        alt={item.title || "Item"}
 
-              </span>
+                        className="modal-image"
 
-              {
+                        initial={{
+                            scale: 1.1
+                        }}
 
-                item.time ? (
+                        animate={{
+                            scale: 1
+                        }}
 
-                  <span>
+                        transition={{
+                            duration: 0.6
+                        }}
 
-                    <FaClock />
+                        onError={(e) => {
 
-                    {item.time}
+                            e.currentTarget.src =
+                                "/placeholder-item.png";
 
-                  </span>
+                        }}
 
-                ) : (
+                    />
 
-                  <span>
 
-                    <FaUser />
+                    {/* CONTENT */}
 
-                    {item.finder}
+                    <div className="modal-content">
 
-                  </span>
+                        <h2>
+                            {item.title}
+                        </h2>
 
-                )
 
-              }
+                        <div className="modal-info">
 
-              <span>
+                            {/* LOCATION */}
 
-                <FaTag />
+                            <span>
 
-                {item.category}
+                                <FaMapMarkerAlt />
 
-              </span>
+                                {item.location ||
+                                    "Location unavailable"}
 
-            </div>
+                            </span>
 
-            <p className="modal-description">
 
-              {
+                            {/* DATE */}
 
-                item.description ||
+                            <span>
 
-                "No description available for this item."
+                                <FaCalendarAlt />
 
-              }
+                                {formattedDate}
 
-            </p>
+                            </span>
 
-            <button className="claim-btn">
 
-              {
+                            {/* REPORTER */}
 
-                item.time
+                            <span>
 
-                ?
+                                <FaUser />
 
-                "Claim This Item"
+                                {reporterName}
 
-                :
+                            </span>
 
-                "Contact Finder"
 
-              }
+                            {/* CATEGORY */}
 
-            </button>
+                            <span>
 
-          </div>
+                                <FaTag />
 
-        </motion.div>
+                                {item.category ||
+                                    "Other"}
 
-      </motion.div>
+                            </span>
 
-    </AnimatePresence>
+                        </div>
 
-  );
+
+                        {/* DESCRIPTION */}
+
+                        <p className="modal-description">
+
+                            {item.description ||
+                                "No description available for this item."}
+
+                        </p>
+
+
+                        {/* CONTACT / CLAIM */}
+
+                        <button
+
+                            className="claim-btn"
+
+                            onClick={() => {
+
+                                if (reporterEmail) {
+
+                                    window.location.href =
+                                        `mailto:${reporterEmail}`;
+
+                                }
+
+                            }}
+
+                        >
+
+                            {type === "lost"
+                                ? "Contact Finder"
+                                : "Contact Finder"
+                            }
+
+                        </button>
+
+                    </div>
+
+                </motion.div>
+
+            </motion.div>
+
+        </AnimatePresence>
+
+    );
 
 }

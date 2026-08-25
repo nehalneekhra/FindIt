@@ -49,9 +49,9 @@ export default function BrowseCard({ item, type }) {
      * did not upload an image.
      */
     const imageSrc =
-        item.image && item.image.trim() !== ""
-            ? item.image
-            : "/placeholder-item.png";
+    item.image && item.image.trim() !== ""
+        ? `http://localhost:5001${item.image}`
+        : "/placeholder-item.png";
 
 
     return (
@@ -192,12 +192,10 @@ export default function BrowseCard({ item, type }) {
             {/* MODAL */}
 
             <ItemModal
-
-                item={open ? item : null}
-
-                onClose={() => setOpen(false)}
-
-            />
+    item={open ? item : null}
+    type={type}
+    onClose={() => setOpen(false)}
+/>
 
         </>
 

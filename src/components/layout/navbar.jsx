@@ -1,586 +1,715 @@
 import "./navbar.css";
 
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import { useState, useEffect, useRef } from "react";
 
 import { motion, AnimatePresence } from "framer-motion";
 
 import {
-
-FaSearch,
-
-FaBell,
-
-FaUserCircle,
-
-FaChevronDown,
-
-FaBars,
-
-FaTimes
-
+    FaSearch,
+    FaBell,
+    FaUserCircle,
+    FaChevronDown,
+    FaBars,
+    FaTimes,
+    FaSignOutAlt
 } from "react-icons/fa";
 
-export default function Navbar(){
+export default function Navbar() {
 
-const[sticky,setSticky]=useState(false);
+    const [sticky, setSticky] = useState(false);
+    const [reportOpen, setReportOpen] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
 
-const[reportOpen,setReportOpen]=useState(false);
+    const reportRef = useRef(null);
+    const profileRef = useRef(null);
 
-const[profileOpen,setProfileOpen]=useState(false);
+    const navigate = useNavigate();
 
-const[mobileOpen,setMobileOpen]=useState(false);
 
-const reportRef=useRef(null);
+    const [user, setUser] = useState(() => {
 
-const profileRef=useRef(null);
+    const storedUser = localStorage.getItem("user");
 
-useEffect(()=>{
+    if (!storedUser) {
+        return null;
+    }
 
-const handleScroll=()=>{
+    try {
+        return JSON.parse(storedUser);
+    } catch (error) {
+        console.error("Unable to read user:", error);
+        return null;
+    }
 
-setSticky(window.scrollY>20);
+});
 
-};
 
-window.addEventListener("scroll",handleScroll);
+    /*
+     * Navbar scroll effect
+     */
+    useEffect(() => {
 
-return()=>window.removeEventListener("scroll",handleScroll);
+        const handleScroll = () => {
 
-},[]);
+            setSticky(window.scrollY > 20);
 
-useEffect(()=>{
+        };
 
-const handleClick=(e)=>{
+        window.addEventListener("scroll", handleScroll);
 
-if(
+        return () => {
 
-reportRef.current &&
+            window.removeEventListener("scroll", handleScroll);
 
-!reportRef.current.contains(e.target)
+        };
 
-){
+    }, []);
 
-setReportOpen(false);
 
-}
+    /*
+     * Close dropdowns when clicking outside
+     */
+    useEffect(() => {
 
-if(
+        const handleClick = (e) => {
 
-profileRef.current &&
+            if (
+                reportRef.current &&
+                !reportRef.current.contains(e.target)
+            ) {
 
-!profileRef.current.contains(e.target)
+                setReportOpen(false);
 
-){
+            }
 
-setProfileOpen(false);
+            if (
+                profileRef.current &&
+                !profileRef.current.contains(e.target)
+            ) {
 
-}
+                setProfileOpen(false);
 
-};
+            }
 
-document.addEventListener("mousedown",handleClick);
+        };
 
-return()=>{
+        document.addEventListener("mousedown", handleClick);
 
-document.removeEventListener("mousedown",handleClick);
+        return () => {
 
-};
+            document.removeEventListener("mousedown", handleClick);
 
-},[]);
+        };
 
-return(
+    }, []);
 
-<nav
 
-className={`navbar navbar-expand-lg custom-navbar ${
+    /*
+     * Logout
+     */
+    const handleLogout = () => {
 
-sticky
+        localStorage.removeItem("user");
 
-?
+        localStorage.removeItem("token");
 
-"navbar-scrolled"
+        setUser(null);
 
-:
+        setProfileOpen(false);
 
-""
+        navigate("/");
 
-}`}
+    };
 
->
 
-<div className="container-fluid px-5">
+    return (
 
-<Link
+        <nav
 
-className="navbar-brand d-flex align-items-center"
+            className={`navbar navbar-expand-lg custom-navbar ${
+                sticky
+                    ? "navbar-scrolled"
+                    : ""
+            }`}
 
-to="/"
+        >
 
->
+            <div className="container-fluid px-5">
 
-<motion.div
 
-initial={{rotate:-35,scale:0}}
+                {/* LOGO */}
 
-animate={{
+                <Link
 
-rotate:0,
+                    className="navbar-brand d-flex align-items-center"
 
-scale:sticky?.9:1
+                    to="/"
 
-}}
+                >
 
-transition={{
+                    <motion.div
 
-duration:.8,
+                        initial={{
+                            rotate: -35,
+                            scale: 0
+                        }}
 
-type:"spring",
+                        animate={{
+                            rotate: 0,
+                            scale: sticky ? .9 : 1
+                        }}
 
-stiffness:180
+                        transition={{
+                            duration: .8,
+                            type: "spring",
+                            stiffness: 180
+                        }}
 
-}}
+                    >
 
->
+                        <FaSearch className="logo-icon"/>
 
-<FaSearch className="logo-icon"/>
+                    </motion.div>
 
-</motion.div>
 
-<motion.span
+                    <motion.span
 
-initial={{x:-30,opacity:0}}
+                        initial={{
+                            x: -30,
+                            opacity: 0
+                        }}
 
-animate={{
+                        animate={{
+                            x: 0,
+                            opacity: 1,
+                            scale: sticky ? .94 : 1
+                        }}
 
-x:0,
+                        transition={{
+                            delay: .3
+                        }}
 
-opacity:1,
+                        className="logo-find"
 
-scale:sticky?.94:1
+                    >
 
-}}
+                        Find
 
-transition={{delay:.3}}
+                    </motion.span>
 
-className="logo-find"
 
->
+                    <motion.span
 
-Find
+                        initial={{
+                            x: 30,
+                            opacity: 0
+                        }}
 
-</motion.span>
+                        animate={{
+                            x: 0,
+                            opacity: 1,
+                            scale: sticky ? .94 : 1
+                        }}
 
-<motion.span
+                        transition={{
+                            delay: .45
+                        }}
 
-initial={{x:30,opacity:0}}
+                        className="logo-it"
 
-animate={{
+                    >
 
-x:0,
+                        It
 
-opacity:1,
+                    </motion.span>
 
-scale:sticky?.94:1
+                </Link>
 
-}}
 
-transition={{delay:.45}}
+                {/* MOBILE MENU BUTTON */}
 
-className="logo-it"
+                <button
 
->
+                    className="navbar-toggler"
 
-It
+                    onClick={() =>
+                        setMobileOpen(!mobileOpen)
+                    }
 
-</motion.span>
+                >
 
-</Link>
+                    {
 
-<button
+                        mobileOpen
 
-className="navbar-toggler"
+                            ? <FaTimes/>
 
-onClick={()=>setMobileOpen(!mobileOpen)}
+                            : <FaBars/>
 
->
+                    }
 
-{
+                </button>
 
-mobileOpen
 
-?
+                <div
 
-<FaTimes/>
+                    className={`collapse navbar-collapse ${
+                        mobileOpen
+                            ? "show"
+                            : ""
+                    }`}
 
-:
+                >
 
-<FaBars/>
+                    <ul className="navbar-nav ms-auto align-items-center">
 
-}
 
-</button>
+                        {/* HOME */}
 
-<div
+                        <li className="nav-item">
 
-className={`collapse navbar-collapse ${
+                            <NavLink
 
-mobileOpen
+                                to="/"
 
-?
+                                className="nav-link"
 
-"show"
+                                onClick={() =>
+                                    setMobileOpen(false)
+                                }
 
-:
+                            >
 
-""
+                                Home
 
-}`}
+                            </NavLink>
 
->
+                        </li>
 
-<ul className="navbar-nav ms-auto align-items-center">
 
-<li className="nav-item">
+                        {/* BROWSE */}
 
-<NavLink
+                        <li className="nav-item">
 
-to="/"
+                            <NavLink
 
-className="nav-link"
+                                to="/browse"
 
->
+                                className="nav-link"
 
-Home
+                                onClick={() =>
+                                    setMobileOpen(false)
+                                }
 
-</NavLink>
+                            >
 
-</li>
+                                Browse
 
-<li className="nav-item">
+                            </NavLink>
 
-<NavLink
+                        </li>
 
-to="/browse/lost"
 
-className="nav-link"
+                        {/* REPORT */}
 
->
+                        <li
 
-Browse
+                            className="nav-item position-relative"
 
-</NavLink>
+                            ref={reportRef}
 
-</li>
+                        >
 
-<li
+                            <button
 
-className="nav-item position-relative"
+                                className="report-btn"
 
-ref={reportRef}
+                                onClick={() => {
 
->
+                                    setReportOpen(!reportOpen);
 
-<button
+                                    setProfileOpen(false);
 
-className="report-btn"
+                                }}
 
-onClick={()=>{
+                            >
 
-setReportOpen(!reportOpen);
+                                Report
 
-setProfileOpen(false);
 
-}}
+                                <FaChevronDown
 
->
+                                    className={`arrow ${
+                                        reportOpen
+                                            ? "rotate"
+                                            : ""
+                                    }`}
 
-Report
+                                />
 
-<FaChevronDown
+                            </button>
 
-className={`arrow ${
 
-reportOpen
+                            <AnimatePresence>
 
-?
+                                {
 
-"rotate"
+                                    reportOpen && (
 
-:
+                                        <motion.div
 
-""
+                                            className="custom-dropdown"
 
-}`}
+                                            initial={{
+                                                opacity: 0,
+                                                y: 12,
+                                                scale: .96
+                                            }}
 
-/>
+                                            animate={{
+                                                opacity: 1,
+                                                y: 0,
+                                                scale: 1
+                                            }}
 
-</button>
+                                            exit={{
+                                                opacity: 0,
+                                                y: 12,
+                                                scale: .96
+                                            }}
 
-<AnimatePresence>
+                                            transition={{
+                                                duration: .22
+                                            }}
 
-{
+                                        >
 
-reportOpen && (
+                                            <div className="dropdown-links">
 
-<motion.div
 
-className="custom-dropdown"
+                                                <Link
 
-initial={{
+                                                    to="/report-lost"
 
-opacity:0,
+                                                    onClick={() =>
+                                                        setReportOpen(false)
+                                                    }
 
-y:12,
+                                                >
 
-scale:.96
+                                                    Report Lost
 
-}}
+                                                </Link>
 
-animate={{
 
-opacity:1,
+                                                <Link
 
-y:0,
+                                                    to="/report-found"
 
-scale:1
+                                                    onClick={() =>
+                                                        setReportOpen(false)
+                                                    }
 
-}}
+                                                >
 
-exit={{
+                                                    Report Found
 
-opacity:0,
+                                                </Link>
 
-y:12,
 
-scale:.96
+                                            </div>
 
-}}
+                                        </motion.div>
 
-transition={{
+                                    )
 
-duration:.22
+                                }
 
-}}
->
+                            </AnimatePresence>
 
-<div className="dropdown-links">
+                        </li>
 
-<Link
 
-to="/report-lost"
+                        {/* LOGIN */}
 
-onClick={()=>setReportOpen(false)}
+                        {
 
->
+                            !user && (
 
-Report Lost
+                                <li className="nav-item ms-3">
 
-</Link>
+                                    <NavLink
 
-<Link
+                                        to="/login"
 
-to="/report-found"
+                                        className="login-nav-btn"
 
-onClick={()=>setReportOpen(false)}
+                                    >
 
->
+                                        Login
 
-Report Found
+                                    </NavLink>
 
-</Link>
+                                </li>
 
-</div>
+                            )
 
-</motion.div>
+                        }
 
-)
 
-}
+                        {/* RIGHT SIDE ICONS */}
 
-</AnimatePresence>
+                        <div className="navbar-actions">
 
-</li>
 
-<li className="nav-item ms-3">
+                            {/* SEARCH */}
 
-<NavLink
+                            <Link
 
-to="/login"
+                                to="/search"
 
-className="login-nav-btn"
+                                className="icon-btn"
 
->
+                            >
 
-Login
+                                <FaSearch/>
 
-</NavLink>
+                            </Link>
 
-</li>
 
-<div className="navbar-actions">
+                            {/* NOTIFICATIONS */}
 
-<Link
-    to="/search"
-    className="icon-btn"
->
-    <FaSearch/>
-</Link>
+                            <li className="nav-item">
 
-<li className="nav-item">
+                                <Link
 
-<Link
-to="/notifications"
-className="icon-btn notification-btn"
->
+                                    to="/notifications"
 
-<FaBell/>
+                                    className="icon-btn notification-btn"
 
-<span className="notification-dot"></span>
+                                >
 
-</Link>
+                                    <FaBell/>
 
-</li>
+                                    <span className="notification-dot"></span>
 
-<li
+                                </Link>
 
-className="nav-item position-relative"
+                            </li>
 
-ref={profileRef}
 
->
+                            {/* PROFILE */}
 
-<button
+                            <li
 
-className="icon-btn"
+                                className="nav-item position-relative"
 
-onClick={()=>{
+                                ref={profileRef}
 
-setProfileOpen(!profileOpen);
+                            >
 
-setReportOpen(false);
+                                <button
 
-}}
+                                    className="icon-btn"
 
->
+                                    onClick={() => {
 
-<FaUserCircle/>
+                                        setProfileOpen(!profileOpen);
 
-</button>
+                                        setReportOpen(false);
 
-<AnimatePresence>
+                                    }}
 
-{
+                                >
 
-profileOpen && (
+                                    <FaUserCircle/>
 
-<motion.div
+                                </button>
 
-className="profile-dropdown"
 
-initial={{
+                                <AnimatePresence>
 
-opacity:0,
+                                    {
 
-y:12,
+                                        profileOpen && (
 
-scale:.96
+                                            <motion.div
 
-}}
+                                                className="profile-dropdown"
 
-animate={{
+                                                initial={{
+                                                    opacity: 0,
+                                                    y: 12,
+                                                    scale: .96
+                                                }}
 
-opacity:1,
+                                                animate={{
+                                                    opacity: 1,
+                                                    y: 0,
+                                                    scale: 1
+                                                }}
 
-y:0,
+                                                exit={{
+                                                    opacity: 0,
+                                                    y: 12,
+                                                    scale: .96
+                                                }}
 
-scale:1
+                                                transition={{
+                                                    duration: .22
+                                                }}
 
-}}
+                                            >
 
-exit={{
+                                                {
 
-opacity:0,
+                                                    user ? (
 
-y:12,
+                                                        <>
 
-scale:.96
+                                                            <div className="profile-header">
 
-}}
+                                                                <h4>
 
-transition={{
+                                                                    {user.name || "User"}
 
-duration:.22
+                                                                </h4>
 
-}}
+                                                                <p>
 
->
+                                                                    {user.email || ""}
 
-<div className="profile-header">
+                                                                </p>
 
-<h4>
+                                                            </div>
 
-Guest User
 
-</h4>
+                                                            <div className="dropdown-links">
 
-<p>
+                                                                <Link
 
-Sign in to access your dashboard.
+                                                                    to="/profile"
 
-</p>
+                                                                    onClick={() =>
+                                                                        setProfileOpen(false)
+                                                                    }
 
-</div>
+                                                                >
 
-<div className="dropdown-links">
+                                                                    Profile
 
-<Link
+                                                                </Link>
 
-to="/login"
 
-onClick={()=>setProfileOpen(false)}
+                                                                <Link
 
->
+                                                                    to="/dashboard"
 
-Login
+                                                                    onClick={() =>
+                                                                        setProfileOpen(false)
+                                                                    }
 
-</Link>
+                                                                >
 
-<Link
+                                                                    Dashboard
 
-to="/signup"
+                                                                </Link>
 
-onClick={()=>setProfileOpen(false)}
 
->
+                                                                <button
+                                                                  onClick={handleLogout}
+                                                               >
+                                                               <FaSignOutAlt />
+                                                                   Logout
+                                                               </button>
 
-Create Account
+                                                            </div>
 
-</Link>
+                                                        </>
 
-</div>
+                                                    ) : (
 
-</motion.div>
+                                                        <>
 
-)
+                                                            <div className="profile-header">
 
-}
+                                                                <h4>
 
-</AnimatePresence>
+                                                                    Guest User
 
-</li>
+                                                                </h4>
 
-</div>
+                                                                <p>
 
-</ul>
+                                                                    Sign in to access your dashboard.
 
-</div>
+                                                                </p>
 
-</div>
+                                                            </div>
 
-</nav>
 
-);
+                                                            <div className="dropdown-links">
+
+                                                                <Link
+
+                                                                    to="/login"
+
+                                                                    onClick={() =>
+                                                                        setProfileOpen(false)
+                                                                    }
+
+                                                                >
+
+                                                                    Login
+
+                                                                </Link>
+
+
+                                                                <Link
+
+                                                                    to="/signup"
+
+                                                                    onClick={() =>
+                                                                        setProfileOpen(false)
+                                                                    }
+
+                                                                >
+
+                                                                    Create Account
+
+                                                                </Link>
+
+                                                            </div>
+
+                                                        </>
+
+                                                    )
+
+                                                }
+
+                                            </motion.div>
+
+                                        )
+
+                                    }
+
+                                </AnimatePresence>
+
+                            </li>
+
+                        </div>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+        </nav>
+
+    );
 
 }
