@@ -85,7 +85,6 @@ export default function ReportFound() {
         data.append("category", formData.category);
         data.append("location", formData.location);
         data.append("dateFound", formData.date);
-        data.append("reportedBy", user._id);
 
         if (image) {
             data.append("image", image);

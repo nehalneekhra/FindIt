@@ -87,7 +87,6 @@ export default function ReportLost() {
     data.append("reward", formData.reward);
     data.append("phone", formData.phone);
     data.append("email", formData.email);
-    data.append("reportedBy", user._id);
 
     if (image) {
         data.append("image", image);
