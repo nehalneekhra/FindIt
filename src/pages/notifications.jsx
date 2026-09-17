@@ -3,162 +3,614 @@ import "../components/notifications/notifications.css";
 import Navbar from "../components/layout/navbar";
 import Footer from "../components/footer/footer";
 
-import { motion } from "framer-motion";
+import {
+    useEffect,
+    useState
+} from "react";
 
 import {
-  FaBell,
-  FaCheckCircle,
-  FaBoxOpen,
-  FaUserCheck,
-  FaTrash,
+    useNavigate
+} from "react-router-dom";
+
+import {
+    FaBell,
+    FaCheck,
+    FaCheckDouble,
+    FaArrowLeft,
+    FaInbox,
+    FaClock
 } from "react-icons/fa";
+
+import {
+    getNotifications,
+    markNotificationAsRead,
+    markAllNotificationsAsRead
+} from "../services/notificationService";
+
 
 export default function Notifications() {
 
-  const notifications = [
+    const navigate = useNavigate();
 
-    {
-      id:1,
-      title:"Possible Match Found",
-      message:"Someone found a black wallet matching your report.",
-      time:"2 mins ago",
-      unread:true,
-      icon:<FaCheckCircle/>
-    },
 
-    {
-      id:2,
-      title:"Item Claimed",
-      message:"A student has requested ownership of your found ID Card.",
-      time:"15 mins ago",
-      unread:true,
-      icon:<FaUserCheck/>
-    },
+    const [notifications, setNotifications] =
+        useState([]);
 
-    {
-      id:3,
-      title:"Report Approved",
-      message:"Your lost AirPods report is now visible to everyone.",
-      time:"Yesterday",
-      unread:false,
-      icon:<FaBoxOpen/>
-    },
+    const [loading, setLoading] =
+        useState(true);
 
-    {
-      id:4,
-      title:"Welcome to FindIt",
-      message:"Thanks for joining the FindIt community.",
-      time:"2 Days Ago",
-      unread:false,
-      icon:<FaBell/>
-    }
+    const [error, setError] =
+        useState("");
 
-  ];
 
-  return(
+    /*
+     * FETCH NOTIFICATIONS
+     */
+    useEffect(() => {
 
-    <>
+        const fetchNotifications =
+            async () => {
 
-      <Navbar/>
+                const token =
+                    localStorage.getItem("token");
 
-      <section className="notification-page">
 
-        <div className="container">
+                if (!token) {
 
-          <motion.div
-            className="notification-header"
-            initial={{opacity:0,y:30}}
-            animate={{opacity:1,y:0}}
-          >
+                    navigate("/login");
 
-            <div>
-
-              <h1>Notifications</h1>
-
-              <p>
-                Stay updated with everything happening on your account.
-              </p>
-
-            </div>
-
-            <div className="notification-actions">
-
-              <button>
-
-                Mark All Read
-
-              </button>
-
-              <button className="delete-btn">
-
-                <FaTrash/>
-
-                Clear
-
-              </button>
-
-            </div>
-
-          </motion.div>
-
-          <div className="notification-list">
-
-            {notifications.map((item,index)=>(
-
-              <motion.div
-
-                key={item.id}
-
-                className={`notification-card ${item.unread?"unread":""}`}
-
-                initial={{opacity:0,x:-40}}
-
-                animate={{opacity:1,x:0}}
-
-                transition={{delay:index*.12}}
-
-              >
-
-                <div className="notification-icon">
-
-                  {item.icon}
-
-                </div>
-
-                <div className="notification-content">
-
-                  <div className="notification-top">
-
-                    <h3>{item.title}</h3>
-
-                    <span>{item.time}</span>
-
-                  </div>
-
-                  <p>{item.message}</p>
-
-                </div>
-
-                {item.unread &&
-
-                  <div className="notification-dot"></div>
+                    return;
 
                 }
 
-              </motion.div>
 
-            ))}
+                try {
 
-          </div>
+                    setLoading(true);
 
-        </div>
+                    setError("");
 
-      </section>
 
-      <Footer/>
+                    const response =
+                        await getNotifications();
 
-    </>
 
-  );
+                    if (
+                        response.success
+                    ) {
+
+                        setNotifications(
+                            response.notifications ||
+                            []
+                        );
+
+                    } else {
+
+                        setError(
+                            response.message ||
+                            "Unable to load notifications."
+                        );
+
+                    }
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    setError(
+                        "Unable to load notifications."
+                    );
+
+                } finally {
+
+                    setLoading(false);
+
+                }
+
+            };
+
+
+        fetchNotifications();
+
+    }, [navigate]);
+
+
+    /*
+     * MARK ONE READ
+     */
+    const handleNotificationClick =
+        async (notification) => {
+
+            if (!notification.read) {
+
+                const response =
+                    await markNotificationAsRead(
+                        notification._id
+                    );
+
+
+                if (response.success) {
+
+                    setNotifications(
+                        prev =>
+                            prev.map(item =>
+                                item._id ===
+                                notification._id
+                                    ? {
+                                        ...item,
+                                        read: true
+                                    }
+                                    : item
+                            )
+                    );
+
+
+                    /*
+                     * Tell Navbar that the
+                     * unread count changed.
+                     */
+                    window.dispatchEvent(
+                        new Event(
+                            "notificationsUpdated"
+                        )
+                    );
+
+                }
+
+            }
+
+
+            /*
+             * If notification has a
+             * related claim, take user
+             * to dashboard.
+             */
+            if (
+                notification.relatedClaim
+            ) {
+
+                navigate("/dashboard");
+
+                return;
+
+            }
+
+
+            /*
+             * If notification has an
+             * item but no claim,
+             * open the item.
+             */
+            if (
+                notification.relatedItem?._id
+            ) {
+
+                navigate(
+                    `/item/${notification.relatedItem._id}`
+                );
+
+            }
+
+        };
+
+
+    /*
+     * MARK ALL READ
+     */
+    const handleMarkAllRead =
+        async () => {
+
+            const response =
+                await markAllNotificationsAsRead();
+
+
+            if (
+                response.success
+            ) {
+
+                setNotifications(
+                    prev =>
+                        prev.map(
+                            notification => ({
+                                ...notification,
+                                read: true
+                            })
+                        )
+                );
+
+
+                /*
+                 * Immediately tell Navbar
+                 * to remove the unread badge.
+                 */
+                window.dispatchEvent(
+                    new Event(
+                        "notificationsUpdated"
+                    )
+                );
+
+            }
+
+        };
+
+
+    /*
+     * FORMAT DATE
+     */
+    const formatDate = (date) => {
+
+        if (!date) {
+
+            return "";
+
+        }
+
+
+        const notificationDate =
+            new Date(date);
+
+
+        if (
+            Number.isNaN(
+                notificationDate.getTime()
+            )
+        ) {
+
+            return "";
+
+        }
+
+
+        return notificationDate.toLocaleDateString(
+            "en-IN",
+            {
+                day: "numeric",
+                month: "short",
+                year: "numeric"
+            }
+        );
+
+    };
+
+
+    /*
+     * FORMAT TIME
+     */
+    const formatTime = (date) => {
+
+        if (!date) {
+
+            return "";
+
+        }
+
+
+        const notificationDate =
+            new Date(date);
+
+
+        if (
+            Number.isNaN(
+                notificationDate.getTime()
+            )
+        ) {
+
+            return "";
+
+        }
+
+
+        return notificationDate.toLocaleTimeString(
+            "en-IN",
+            {
+                hour: "numeric",
+                minute: "2-digit"
+            }
+        );
+
+    };
+
+
+    /*
+     * COUNT UNREAD NOTIFICATIONS
+     */
+    const unreadCount =
+        notifications.filter(
+            notification =>
+                !notification.read
+        ).length;
+
+
+    return (
+
+        <>
+
+            <Navbar />
+
+
+            <main className="notifications-page">
+
+                <div className="notifications-container">
+
+
+                    {/* HEADER */}
+
+                    <div className="notifications-header">
+
+                        <button
+
+                            className="notifications-back"
+
+                            onClick={() =>
+                                navigate(-1)
+                            }
+
+                        >
+
+                            <FaArrowLeft />
+
+                            Back
+
+                        </button>
+
+
+                        <div className="notifications-title">
+
+                            <div className="notifications-icon">
+
+                                <FaBell />
+
+                            </div>
+
+
+                            <div>
+
+                                <h1>
+                                    Notifications
+                                </h1>
+
+                                <p>
+                                    Stay updated about your FindIt activity.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        {unreadCount > 0 && (
+
+                            <button
+
+                                className="mark-all-btn"
+
+                                onClick={
+                                    handleMarkAllRead
+                                }
+
+                            >
+
+                                <FaCheckDouble />
+
+                                Mark all as read
+
+                            </button>
+
+                        )}
+
+                    </div>
+
+
+                    {/* LOADING */}
+
+                    {loading && (
+
+                        <div className="notifications-empty">
+
+                            <div className="notifications-spinner"></div>
+
+                            <p>
+                                Loading notifications...
+                            </p>
+
+                        </div>
+
+                    )}
+
+
+                    {/* ERROR */}
+
+                    {!loading && error && (
+
+                        <div className="notifications-empty">
+
+                            <div className="notifications-empty-icon">
+
+                                <FaBell />
+
+                            </div>
+
+                            <h3>
+                                Something went wrong
+                            </h3>
+
+                            <p>
+                                {error}
+                            </p>
+
+                        </div>
+
+                    )}
+
+
+                    {/* EMPTY */}
+
+                    {!loading &&
+                        !error &&
+                        notifications.length === 0 && (
+
+                            <div className="notifications-empty">
+
+                                <div className="notifications-empty-icon">
+
+                                    <FaInbox />
+
+                                </div>
+
+                                <h3>
+                                    You're all caught up
+                                </h3>
+
+                                <p>
+                                    You don't have any notifications yet.
+                                </p>
+
+                            </div>
+
+                        )}
+
+
+                    {/* NOTIFICATIONS */}
+
+                    {!loading &&
+                        !error &&
+                        notifications.length > 0 && (
+
+                            <div className="notifications-list">
+
+                                {notifications.map(
+                                    notification => (
+
+                                        <div
+
+                                            key={
+                                                notification._id
+                                            }
+
+                                            className={`notification-card ${
+                                                notification.read
+                                                    ? "read"
+                                                    : "unread"
+                                            }`}
+
+                                            onClick={() =>
+                                                handleNotificationClick(
+                                                    notification
+                                                )
+                                            }
+
+                                        >
+
+
+                                            {/* ICON */}
+
+                                            <div
+
+                                                className={`notification-card-icon ${
+                                                    notification.type
+                                                }`}
+
+                                            >
+
+                                                {
+                                                    notification.type ===
+                                                    "claim_accepted"
+
+                                                        ? (
+                                                            <FaCheck />
+                                                        )
+
+                                                        : notification.type ===
+                                                          "claim_rejected"
+
+                                                            ? (
+                                                                <FaBell />
+                                                            )
+
+                                                            : (
+                                                                <FaBell />
+                                                            )
+                                                }
+
+                                            </div>
+
+
+                                            {/* CONTENT */}
+
+                                            <div className="notification-card-content">
+
+                                                <div className="notification-card-top">
+
+                                                    <h3>
+                                                        {notification.title}
+                                                    </h3>
+
+
+                                                    {!notification.read && (
+
+                                                        <span className="notification-new">
+
+                                                            New
+
+                                                        </span>
+
+                                                    )}
+
+                                                </div>
+
+
+                                                <p>
+                                                    {notification.message}
+                                                </p>
+
+
+                                                <div className="notification-time">
+
+                                                    <FaClock />
+
+                                                    {formatDate(
+                                                        notification.createdAt
+                                                    )}
+
+                                                    <span>
+                                                        •
+                                                    </span>
+
+                                                    {formatTime(
+                                                        notification.createdAt
+                                                    )}
+
+                                                </div>
+
+                                            </div>
+
+
+                                            {/* READ INDICATOR */}
+
+                                            {!notification.read && (
+
+                                                <div className="notification-unread-dot"></div>
+
+                                            )}
+
+                                        </div>
+
+                                    )
+                                )}
+
+                            </div>
+
+                        )}
+
+                </div>
+
+            </main>
+
+
+            <Footer />
+
+        </>
+
+    );
 
 }

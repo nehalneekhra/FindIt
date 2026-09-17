@@ -301,3 +301,56 @@ padding:20px;
 }
 
 }
+
+/* ==============================
+   CLAIM BUTTON
+============================== */
+
+.browse-claim-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px 16px;
+
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    border-radius: 9px;
+
+    background: rgba(139, 92, 246, 0.12);
+
+    color: #b794ff;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        color 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.browse-claim-btn:hover {
+    background: linear-gradient(
+        135deg,
+        #8b5cf6,
+        #7c3aed
+    );
+
+    border-color: #9f7aea;
+
+    color: #ffffff;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 22px rgba(124, 58, 237, 0.35);
+}
+
+.browse-claim-btn:active {
+    transform: translateY(0);
+
+    box-shadow:
+        0 4px 12px rgba(124, 58, 237, 0.25);
+}

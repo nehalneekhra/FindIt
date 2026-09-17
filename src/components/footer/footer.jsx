@@ -110,7 +110,7 @@ export default function Footer() {
 
           <p>
 
-            © 2026 FindIt. Made with ❤️ by Nehal.
+            © 2026 FindIt.
 
           </p>
 

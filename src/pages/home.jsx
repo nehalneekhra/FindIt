@@ -4,8 +4,8 @@ import SearchBar from "../components/home/searchbar";
 import CategorySection from "../components/home/categorysection";
 import LatestLost from "../components/latestlost/latestlost";
 import LatestFound from "../components/latestfound/latestfound";
-import Stats from "../components/stats/stats";
-import Testimonials from "../components/testimonials/testimonials";
+// import Stats from "../components/stats/stats";
+// import Testimonials from "../components/testimonials/testimonials";
 import HowItWorks from "../components/howitworks/howitworks";
 import Faq from "../components/faq/faq";
 import Cta from "../components/cta/cta";
@@ -22,8 +22,8 @@ export default function Home() {
       <CategorySection />
       <LatestLost />
       <LatestFound />
-      <Stats />
-      <Testimonials />
+      {/* <Stats /> */}
+      {/* <Testimonials /> */}
       <HowItWorks />
       <Faq />
       <Cta />

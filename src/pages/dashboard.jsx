@@ -16,7 +16,13 @@ import {
     FaTimes,
     FaTrash,
     FaEdit,
-    FaSave
+    FaSave,
+    FaUser,
+    FaClock,
+    FaCheckCircle,
+    FaTimesCircle,
+    FaEnvelope,
+    FaPhone
 } from "react-icons/fa";
 
 import {
@@ -27,6 +33,12 @@ import {
     updateLostItem,
     updateFoundItem
 } from "../services/itemService";
+
+import {
+    getMyClaims,
+    getReceivedClaims,
+    updateClaimStatus
+} from "../services/claimService";
 
 
 const API_URL = "http://localhost:5001";
@@ -105,6 +117,17 @@ export default function Dashboard() {
         email: ""
 
     });
+
+
+    /* =========================
+       CLAIMS
+    ========================= */
+
+    const [receivedClaims, setReceivedClaims] = useState([]);
+    const [myClaims, setMyClaims] = useState([]);
+    const [claimsLoading, setClaimsLoading] = useState(true);
+    const [claimsError, setClaimsError] = useState("");
+    const [processingClaimId, setProcessingClaimId] = useState(null);
 
 
     /* =========================
@@ -230,6 +253,217 @@ export default function Dashboard() {
 
 
     /* =========================
+       FETCH CLAIMS
+    ========================= */
+
+    useEffect(() => {
+
+        if (!user?._id) {
+            return;
+        }
+
+        const fetchClaims = async () => {
+
+            try {
+
+                setClaimsLoading(true);
+                setClaimsError("");
+
+                const [receivedResponse, myResponse] =
+                    await Promise.all([
+                        getReceivedClaims(),
+                        getMyClaims()
+                    ]);
+
+                if (receivedResponse.success) {
+                    setReceivedClaims(
+                        receivedResponse.claims || []
+                    );
+                } else {
+                    setReceivedClaims([]);
+                }
+
+                if (myResponse.success) {
+                    setMyClaims(
+                        myResponse.claims || []
+                    );
+                } else {
+                    setMyClaims([]);
+                }
+
+                if (
+                    !receivedResponse.success &&
+                    !myResponse.success
+                ) {
+                    setClaimsError(
+                        "Unable to load your claims."
+                    );
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Unable to fetch claims:",
+                    error
+                );
+
+                setClaimsError(
+                    "Unable to load your claims."
+                );
+
+            } finally {
+
+                setClaimsLoading(false);
+
+            }
+
+        };
+
+        fetchClaims();
+
+    }, [user]);
+
+
+    /* =========================
+       UPDATE CLAIM STATUS
+    ========================= */
+
+    const handleClaimStatus = async (claimId, status) => {
+
+        const action =
+            status === "accepted"
+                ? "accept"
+                : "reject";
+
+        const confirmed = window.confirm(
+            `Are you sure you want to ${action} this claim?`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+
+            setProcessingClaimId(claimId);
+
+            const response =
+                await updateClaimStatus(
+                    claimId,
+                    status
+                );
+
+            if (!response.success) {
+
+                alert(
+                    response.message ||
+                    "Unable to update claim."
+                );
+
+                return;
+
+            }
+
+            const updatedClaim = response.claim;
+
+            setReceivedClaims(prev =>
+                prev.map(claim =>
+                    claim._id === claimId
+                        ? updatedClaim || { ...claim, status }
+                        : claim
+                )
+            );
+
+            if (
+                status === "accepted" &&
+                updatedClaim?.item?._id
+            ) {
+
+                setFoundItems(prev =>
+                    prev.map(item =>
+                        item._id ===
+                        updatedClaim.item._id
+                            ? {
+                                ...item,
+                                status: "claimed"
+                            }
+                            : item
+                    )
+                );
+
+            }
+
+            alert(
+                status === "accepted"
+                    ? "Claim accepted successfully."
+                    : "Claim rejected successfully."
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Unable to update claim. Please try again."
+            );
+
+        } finally {
+
+            setProcessingClaimId(null);
+
+        }
+
+    };
+
+
+    /* =========================
+       CLAIM DATE
+    ========================= */
+
+    const formatClaimDate = (date) => {
+
+        if (!date) {
+            return "Recently";
+        }
+
+        const formatted = new Date(date);
+
+        if (Number.isNaN(formatted.getTime())) {
+            return "Recently";
+        }
+
+        return formatted.toLocaleDateString(
+            "en-IN",
+            {
+                day: "numeric",
+                month: "short",
+                year: "numeric"
+            }
+        );
+
+    };
+
+
+    /* =========================
+       CLAIM STATUS LABEL
+    ========================= */
+
+    const getClaimStatusLabel = (status) => {
+
+        if (status === "accepted") {
+            return "Accepted";
+        }
+
+        if (status === "rejected") {
+            return "Rejected";
+        }
+
+        return "Pending";
+
+    };
+
+
+    /* =========================
        COMBINE REPORTS
     ========================= */
 
@@ -329,12 +563,15 @@ export default function Dashboard() {
             if (item.reportType === "lost") {
 
                 response = await deleteLostItem(
-                    item._id
+                    item._id,
+                    user._id
                 );
+
             } else {
 
                 response = await deleteFoundItem(
-                    item._id
+                    item._id,
+                    user._id
                 );
 
             }
@@ -593,14 +830,16 @@ export default function Dashboard() {
 
                 response = await updateLostItem(
                     editingItem._id,
+                    user._id,
                     formData
-              );
+                );
 
             } else {
 
                 response = await updateFoundItem(
-                     editingItem._id,
-                     formData
+                    editingItem._id,
+                    user._id,
+                    formData
                 );
 
             }
@@ -847,6 +1086,399 @@ export default function Dashboard() {
                             </div>
 
                         </div>
+
+                    </section>
+
+
+                    {/* =========================
+                        CLAIMS
+                    ========================= */}
+
+                    <section className="dashboard-claims-section">
+
+                        <div className="section-heading">
+
+                            <div>
+
+                                <h2>
+                                    Claims & Requests
+                                </h2>
+
+                                <p>
+                                    Manage claims on your found items and track the items you've claimed.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        {claimsError && (
+
+                            <div className="claims-error">
+                                {claimsError}
+                            </div>
+
+                        )}
+
+
+                        {claimsLoading ? (
+
+                            <div className="claims-empty">
+                                <div className="loading-spinner"></div>
+                                <p>Loading claims...</p>
+                            </div>
+
+                        ) : (
+
+                            <div className="claims-columns">
+
+                                {/* RECEIVED CLAIMS */}
+
+                                <div className="claims-panel">
+
+                                    <div className="claims-panel-header">
+
+                                        <div>
+                                            <span className="claims-panel-label received">
+                                                Incoming
+                                            </span>
+                                            <h3>
+                                                Claims on My Items
+                                            </h3>
+                                        </div>
+
+                                        <span className="claims-count">
+                                            {receivedClaims.filter(
+                                                claim => claim.status === "pending"
+                                            ).length}
+                                        </span>
+
+                                    </div>
+
+
+                                    {receivedClaims.length === 0 ? (
+
+                                        <div className="claims-empty-small">
+                                            <FaBoxOpen />
+                                            <p>No claims on your found items yet.</p>
+                                        </div>
+
+                                    ) : (
+
+                                        <div className="claims-list">
+
+                                            {receivedClaims.map(claim => {
+
+                                                const claimant = claim.claimant || {};
+                                                const claimItem = claim.item || {};
+                                                const isProcessing =
+                                                    processingClaimId === claim._id;
+
+                                                return (
+
+                                                    <div
+                                                        className="claim-card"
+                                                        key={claim._id}
+                                                    >
+
+                                                        <div className="claim-card-top">
+
+                                                            <div className="claim-user">
+
+                                                                <div className="claim-avatar">
+                                                                    {claimant.profileImage ? (
+                                                                        <img
+                                                                            src={getImageUrl(
+                                                                                claimant.profileImage
+                                                                            )}
+                                                                            alt={claimant.name || "User"}
+                                                                        />
+                                                                    ) : (
+                                                                        <FaUser />
+                                                                    )}
+                                                                </div>
+
+                                                                <div>
+                                                                    <strong>
+                                                                        {claimant.name || "FindIt User"}
+                                                                    </strong>
+                                                                    <span>
+                                                                        {claim.status === "accepted"
+                                                                            ? (claimant.email || "Email unavailable")
+                                                                            : "Contact details available after acceptance"}
+                                                                    </span>
+                                                                </div>
+
+                                                            </div>
+
+                                                            <span
+                                                                className={`claim-status-badge ${claim.status}`}
+                                                            >
+                                                                {claim.status === "accepted" && <FaCheckCircle />}
+                                                                {claim.status === "rejected" && <FaTimesCircle />}
+                                                                {claim.status === "pending" && <FaClock />}
+                                                                {getClaimStatusLabel(claim.status)}
+                                                            </span>
+
+                                                        </div>
+
+
+                                                        <div className="claim-item-name">
+                                                            <span>Claim for</span>
+                                                            <strong>
+                                                                {claimItem.title || "Found item"}
+                                                            </strong>
+                                                        </div>
+
+                                                        {claim.message && (
+                                                            <div className="claim-message">
+                                                                <span>Message</span>
+                                                                <p>
+                                                                    {claim.message}
+                                                                </p>
+                                                            </div>
+                                                        )}
+
+                                                        {claim.status === "accepted" && (
+                                                            <div className="claim-contact-box">
+                                                                <div className="claim-contact-title">
+                                                                    <FaCheckCircle />
+                                                                    Contact the claimant
+                                                                </div>
+
+                                                                <div className="claim-contact-details">
+                                                                    {claimant.email && (
+                                                                        <a
+                                                                            href={`mailto:${claimant.email}`}
+                                                                            className="claim-contact-link"
+                                                                        >
+                                                                            <FaEnvelope />
+                                                                            {claimant.email}
+                                                                        </a>
+                                                                    )}
+
+                                                                    {claimant.phone && (
+                                                                        <a
+                                                                            href={`tel:${claimant.phone}`}
+                                                                            className="claim-contact-link"
+                                                                        >
+                                                                            <FaPhone />
+                                                                            {claimant.phone}
+                                                                        </a>
+                                                                    )}
+
+                                                                    {!claimant.email && !claimant.phone && (
+                                                                        <span className="claim-contact-unavailable">
+                                                                            Contact information unavailable
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="claim-date">
+                                                            <FaCalendarAlt />
+                                                            Submitted {formatClaimDate(claim.createdAt)}
+                                                        </div>
+
+                                                        {claim.status === "pending" && (
+                                                            <div className="claim-actions">
+
+                                                                <button
+                                                                    className="claim-reject-btn"
+                                                                    onClick={() =>
+                                                                        handleClaimStatus(
+                                                                            claim._id,
+                                                                            "rejected"
+                                                                        )
+                                                                    }
+                                                                    disabled={isProcessing}
+                                                                >
+                                                                    <FaTimesCircle />
+                                                                    Reject
+                                                                </button>
+
+                                                                <button
+                                                                    className="claim-accept-btn"
+                                                                    onClick={() =>
+                                                                        handleClaimStatus(
+                                                                            claim._id,
+                                                                            "accepted"
+                                                                        )
+                                                                    }
+                                                                    disabled={isProcessing}
+                                                                >
+                                                                    <FaCheckCircle />
+                                                                    {isProcessing ? "Updating..." : "Accept"}
+                                                                </button>
+
+                                                            </div>
+                                                        )}
+
+                                                    </div>
+
+                                                );
+
+                                            })}
+
+                                        </div>
+
+                                    )}
+
+                                </div>
+
+
+                                {/* MY CLAIMS */}
+
+                                <div className="claims-panel">
+
+                                    <div className="claims-panel-header">
+
+                                        <div>
+                                            <span className="claims-panel-label submitted">
+                                                Submitted
+                                            </span>
+                                            <h3>
+                                                My Claims
+                                            </h3>
+                                        </div>
+
+                                        <span className="claims-count">
+                                            {myClaims.length}
+                                        </span>
+
+                                    </div>
+
+
+                                    {myClaims.length === 0 ? (
+
+                                        <div className="claims-empty-small">
+                                            <FaSearch />
+                                            <p>You haven't claimed any items yet.</p>
+                                        </div>
+
+                                    ) : (
+
+                                        <div className="claims-list">
+
+                                            {myClaims.map(claim => {
+
+                                                const finder = claim.finder || {};
+                                                const claimItem = claim.item || {};
+
+                                                return (
+
+                                                    <div
+                                                        className="claim-card"
+                                                        key={claim._id}
+                                                    >
+
+                                                        <div className="claim-card-top">
+
+                                                            <div className="claim-item-heading">
+                                                                <span>Item</span>
+                                                                <strong>
+                                                                    {claimItem.title || "Found item"}
+                                                                </strong>
+                                                            </div>
+
+                                                            <span
+                                                                className={`claim-status-badge ${claim.status}`}
+                                                            >
+                                                                {claim.status === "accepted" && <FaCheckCircle />}
+                                                                {claim.status === "rejected" && <FaTimesCircle />}
+                                                                {claim.status === "pending" && <FaClock />}
+                                                                {getClaimStatusLabel(claim.status)}
+                                                            </span>
+
+                                                        </div>
+
+                                                        {claim.message && (
+                                                            <div className="claim-message">
+                                                                <span>Your message</span>
+                                                                <p>
+                                                                    {claim.message}
+                                                                </p>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="claim-finder">
+                                                            <FaUser />
+                                                            <div>
+                                                                <span>Found by</span>
+                                                                <strong>
+                                                                    {finder.name || "FindIt User"}
+                                                                </strong>
+                                                            </div>
+                                                        </div>
+
+                                                        {claim.status === "accepted" && (
+                                                            <div className="claim-contact-box">
+                                                                <div className="claim-contact-title">
+                                                                    <FaCheckCircle />
+                                                                    Contact the finder
+                                                                </div>
+
+                                                                <div className="claim-contact-details">
+                                                                    {finder.email && (
+                                                                        <a
+                                                                            href={`mailto:${finder.email}`}
+                                                                            className="claim-contact-link"
+                                                                        >
+                                                                            <FaEnvelope />
+                                                                            {finder.email}
+                                                                        </a>
+                                                                    )}
+
+                                                                    {finder.phone && (
+                                                                        <a
+                                                                            href={`tel:${finder.phone}`}
+                                                                            className="claim-contact-link"
+                                                                        >
+                                                                            <FaPhone />
+                                                                            {finder.phone}
+                                                                        </a>
+                                                                    )}
+
+                                                                    {!finder.email && !finder.phone && (
+                                                                        <span className="claim-contact-unavailable">
+                                                                            Contact information unavailable
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {claim.status === "rejected" && (
+                                                            <div className="claim-contact-rejected">
+                                                                <FaTimesCircle />
+                                                                <span>
+                                                                    This claim was rejected by the finder.
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="claim-date">
+                                                            <FaCalendarAlt />
+                                                            Submitted {formatClaimDate(claim.createdAt)}
+                                                        </div>
+
+                                                    </div>
+
+                                                );
+
+                                            })}
+
+                                        </div>
+
+                                    )}
+
+                                </div>
+
+                            </div>
+
+                        )}
 
                     </section>
 

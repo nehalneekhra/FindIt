@@ -12,6 +12,7 @@ import Profile from "./pages/profile";
 import NotFound from "./pages/notfound";
 import Search from "./pages/search";
 import Notifications from "./pages/notifications";
+import Settings from "./pages/settings";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       <Route path="/item/:id" element={<ItemDetails />} />
       <Route path="*" element={<NotFound />} />
       <Route path="/search" element={<Search />} />
+      <Route path="/settings" element={<Settings />} />
       <Route
         path="/dashboard"
         element={
@@ -70,6 +72,7 @@ function App() {
         }
       />
     </Routes>
+    
   );
 }
 

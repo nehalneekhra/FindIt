@@ -1,7 +1,7 @@
 import "./stats.css";
 import stats from "./statsdata";
 
-import CountUp from "react-countup";
+// import CountUp from "react-countup";
 import { motion } from "framer-motion";
 
 export default function Stats(){

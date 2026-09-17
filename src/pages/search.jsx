@@ -3,269 +3,801 @@ import "../components/search/search.css";
 import Navbar from "../components/layout/navbar";
 import Footer from "../components/footer/footer";
 
+import { getAllItems } from "../services/itemService";
+
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
-  FaSearch,
-  FaMapMarkerAlt,
-  FaCalendarAlt,
-  FaFilter,
+    FaSearch,
+    FaMapMarkerAlt,
+    FaCalendarAlt,
+    FaFilter,
+    FaTimes
 } from "react-icons/fa";
+
 
 export default function Search() {
 
-  const [query, setQuery] = useState("");
+    const navigate = useNavigate();
 
-  const items = [
-    {
-      id: 1,
-      name: "Black Wallet",
-      category: "Accessories",
-      status: "Lost",
-      location: "Library",
-      date: "Today",
-      image: "https://picsum.photos/400/250?random=1"
-    },
-    {
-      id: 2,
-      name: "Apple AirPods",
-      category: "Electronics",
-      status: "Found",
-      location: "Cafeteria",
-      date: "Yesterday",
-      image: "https://picsum.photos/400/250?random=2"
-    },
-    {
-      id: 3,
-      name: "College ID Card",
-      category: "Documents",
-      status: "Lost",
-      location: "Main Gate",
-      date: "2 Days Ago",
-      image: "https://picsum.photos/400/250?random=3"
-    },
-    {
-      id: 4,
-      name: "Blue Backpack",
-      category: "Bags",
-      status: "Found",
-      location: "Computer Lab",
-      date: "Today",
-      image: "https://picsum.photos/400/250?random=4"
-    },
-    {
-      id: 5,
-      name: "Scientific Calculator",
-      category: "Electronics",
-      status: "Lost",
-      location: "Block A",
-      date: "Yesterday",
-      image: "https://picsum.photos/400/250?random=5"
-    },
-    {
-      id: 6,
-      name: "Water Bottle",
-      category: "Others",
-      status: "Found",
-      location: "Sports Ground",
-      date: "Today",
-      image: "https://picsum.photos/400/250?random=6"
-    }
-  ];
 
-  const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(query.toLowerCase())
-  );
+    // ===========================
+    // STATE
+    // ===========================
 
-  return (
-    <>
-      <Navbar />
+    const [items, setItems] = useState([]);
 
-      <section className="search-page">
+    const [query, setQuery] = useState("");
 
-        <div className="container">
+    const [category, setCategory] = useState("All Categories");
 
-          <motion.div
-            className="search-header"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+    const [type, setType] = useState("All");
 
-            <h1>Search Lost & Found Items</h1>
+    const [sort, setSort] = useState("Newest First");
 
-            <p>
-              Search across all reported lost and found items on campus.
-            </p>
+    const [loading, setLoading] = useState(true);
 
-          </motion.div>
+    const [error, setError] = useState("");
 
-          <motion.div
-            className="search-box-wrapper"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: .2 }}
-          >
 
-            <div className="search-box">
+    // ===========================
+    // FETCH ITEMS
+    // ===========================
 
-              <FaSearch />
+    useEffect(() => {
 
-              <input
-                type="text"
-                placeholder="Search by item name..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
+        const fetchItems = async () => {
 
-            </div>
+            setLoading(true);
+            setError("");
 
-          </motion.div>
+            try {
 
-          <div className="filter-row">
+                const response = await getAllItems();
 
-            <div className="filter">
+                if (response.success) {
 
-              <FaFilter />
+                    setItems(response.items || []);
 
-              <select>
+                } else {
 
-                <option>All Categories</option>
+                    setItems([]);
 
-                <option>Electronics</option>
+                    setError(
+                        response.message ||
+                        "Unable to load items."
+                    );
 
-                <option>Accessories</option>
+                }
 
-                <option>Documents</option>
+            } catch (err) {
 
-                <option>Bags</option>
+                console.error(err);
 
-                <option>Others</option>
+                setItems([]);
 
-              </select>
+                setError(
+                    "Unable to load items. Please try again."
+                );
 
-            </div>
+            } finally {
 
-            <div className="filter">
+                setLoading(false);
 
-              <select>
+            }
 
-                <option>Lost & Found</option>
+        };
 
-                <option>Lost</option>
 
-                <option>Found</option>
+        fetchItems();
 
-              </select>
+    }, []);
 
-            </div>
 
-            <div className="filter">
+    // ===========================
+    // CATEGORY LIST
+    // ===========================
 
-              <select>
+    const categories = useMemo(() => {
 
-                <option>Newest First</option>
+        const uniqueCategories = [
+            ...new Set(
+                items
+                    .map(item => item.category)
+                    .filter(Boolean)
+            )
+        ];
 
-                <option>Oldest First</option>
+        return [
+            "All Categories",
+            ...uniqueCategories
+        ];
 
-              </select>
+    }, [items]);
 
-            </div>
 
-          </div>
+    // ===========================
+    // FILTER + SORT
+    // ===========================
 
-          <div className="results-grid">
+    const filteredItems = useMemo(() => {
 
-            {filteredItems.length > 0 ? (
+        const searchText = query
+            .trim()
+            .toLowerCase();
 
-              filteredItems.map((item) => (
 
-                <motion.div
-                  key={item.id}
-                  className="result-card"
-                  whileHover={{ y: -8 }}
-                >
+        const filtered = items.filter(item => {
 
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                  />
+            const title =
+                item.title?.toLowerCase() || "";
 
-                  <div className="card-content">
+            const description =
+                item.description?.toLowerCase() || "";
 
-                    <span
-                      className={
-                        item.status === "Lost"
-                          ? "lost-badge"
-                          : "found-badge"
-                      }
+            const itemCategory =
+                item.category?.toLowerCase() || "";
+
+            const location =
+                item.location?.toLowerCase() || "";
+
+
+            // Search across multiple fields
+            const matchesSearch =
+                !searchText ||
+                title.includes(searchText) ||
+                description.includes(searchText) ||
+                itemCategory.includes(searchText) ||
+                location.includes(searchText);
+
+
+            // Lost / Found filter
+            const matchesType =
+                type === "All" ||
+                item.type === type.toLowerCase();
+
+
+            // Category filter
+            const matchesCategory =
+                category === "All Categories" ||
+                item.category === category;
+
+
+            return (
+                matchesSearch &&
+                matchesType &&
+                matchesCategory
+            );
+
+        });
+
+
+        // ===========================
+        // SORT
+        // ===========================
+
+        filtered.sort((a, b) => {
+
+            const dateA = new Date(
+                a.createdAt || a.dateLost || a.dateFound
+            );
+
+            const dateB = new Date(
+                b.createdAt || b.dateLost || b.dateFound
+            );
+
+
+            if (sort === "Newest First") {
+
+                return dateB - dateA;
+
+            }
+
+            return dateA - dateB;
+
+        });
+
+
+        return filtered;
+
+    }, [
+        items,
+        query,
+        category,
+        type,
+        sort
+    ]);
+
+
+    // ===========================
+    // FORMAT DATE
+    // ===========================
+
+    const formatDate = (item) => {
+
+        const date =
+            item.dateLost ||
+            item.dateFound ||
+            item.createdAt;
+
+
+        if (!date) {
+            return "Date unavailable";
+        }
+
+
+        return new Date(date).toLocaleDateString(
+            "en-IN",
+            {
+                day: "numeric",
+                month: "short",
+                year: "numeric"
+            }
+        );
+
+    };
+
+
+    // ===========================
+    // IMAGE URL
+    // ===========================
+
+    const getImageUrl = (item) => {
+
+        if (!item.image) {
+            return null;
+        }
+
+
+        if (
+            item.image.startsWith("http://") ||
+            item.image.startsWith("https://")
+        ) {
+
+            return item.image;
+
+        }
+
+
+        return `http://localhost:5001${item.image}`;
+
+    };
+
+
+    // ===========================
+    // CLEAR SEARCH
+    // ===========================
+
+    const clearSearch = () => {
+
+        setQuery("");
+
+    };
+
+
+    // ===========================
+    // CLEAR FILTERS
+    // ===========================
+
+    const clearFilters = () => {
+
+        setQuery("");
+
+        setCategory("All Categories");
+
+        setType("All");
+
+        setSort("Newest First");
+
+    };
+
+
+    // ===========================
+    // OPEN ITEM
+    // ===========================
+
+    const handleViewDetails = (item) => {
+
+        navigate(`/item/${item._id}`);
+
+    };
+
+
+    return (
+        <>
+            <Navbar />
+
+
+            <section className="search-page">
+
+                <div className="container">
+
+
+                    {/* ===========================
+                        HEADER
+                    =========================== */}
+
+                    <motion.div
+                        className="search-header"
+                        initial={{
+                            opacity: 0,
+                            y: 40
+                        }}
+                        animate={{
+                            opacity: 1,
+                            y: 0
+                        }}
                     >
-                      {item.status}
-                    </span>
 
-                    <h3>{item.name}</h3>
+                        <h1>
+                            Search Lost & Found Items
+                        </h1>
 
-                    <p>{item.category}</p>
+                        <p>
+                            Find lost and found items reported across campus.
+                        </p>
 
-                    <div className="card-info">
+                    </motion.div>
 
-                      <span>
 
-                        <FaMapMarkerAlt />
+                    {/* ===========================
+                        SEARCH BAR
+                    =========================== */}
 
-                        {item.location}
+                    <motion.div
+                        className="search-box-wrapper"
+                        initial={{
+                            opacity: 0
+                        }}
+                        animate={{
+                            opacity: 1
+                        }}
+                        transition={{
+                            delay: 0.2
+                        }}
+                    >
 
-                      </span>
+                        <div className="search-box">
 
-                      <span>
+                            <FaSearch />
 
-                        <FaCalendarAlt />
 
-                        {item.date}
+                            <input
+                                type="text"
+                                placeholder="Search by item, description, category or location..."
+                                value={query}
+                                onChange={(e) =>
+                                    setQuery(e.target.value)
+                                }
+                            />
 
-                      </span>
+
+                            {query && (
+
+                                <button
+                                    className="clear-search-btn"
+                                    onClick={clearSearch}
+                                    type="button"
+                                    aria-label="Clear search"
+                                >
+
+                                    <FaTimes />
+
+                                </button>
+
+                            )}
+
+                        </div>
+
+                    </motion.div>
+
+
+                    {/* ===========================
+                        FILTERS
+                    =========================== */}
+
+                    <div className="filter-row">
+
+
+                        {/* CATEGORY */}
+
+                        <div className="filter">
+
+                            <FaFilter />
+
+                            <select
+                                value={category}
+                                onChange={(e) =>
+                                    setCategory(e.target.value)
+                                }
+                            >
+
+                                {categories.map(cat => (
+
+                                    <option
+                                        key={cat}
+                                        value={cat}
+                                    >
+                                        {cat}
+                                    </option>
+
+                                ))}
+
+                            </select>
+
+                        </div>
+
+
+                        {/* TYPE */}
+
+                        <div className="filter">
+
+                            <select
+                                value={type}
+                                onChange={(e) =>
+                                    setType(e.target.value)
+                                }
+                            >
+
+                                <option value="All">
+                                    Lost & Found
+                                </option>
+
+                                <option value="lost">
+                                    Lost
+                                </option>
+
+                                <option value="found">
+                                    Found
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        {/* SORT */}
+
+                        <div className="filter">
+
+                            <select
+                                value={sort}
+                                onChange={(e) =>
+                                    setSort(e.target.value)
+                                }
+                            >
+
+                                <option value="Newest First">
+                                    Newest First
+                                </option>
+
+                                <option value="Oldest First">
+                                    Oldest First
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        {/* CLEAR FILTERS */}
+
+                        {(query ||
+                            category !== "All Categories" ||
+                            type !== "All" ||
+                            sort !== "Newest First") && (
+
+                            <button
+                                className="clear-filters-btn"
+                                onClick={clearFilters}
+                                type="button"
+                            >
+                                <FaTimes />
+                                Clear Filters
+                            </button>
+
+                        )}
 
                     </div>
 
-                    <button className="details-btn">
 
-                      View Details
+                    {/* ===========================
+                        RESULTS INFO
+                    =========================== */}
 
-                    </button>
+                    {!loading && !error && (
 
-                  </div>
+                        <div className="search-results-info">
 
-                </motion.div>
+                            <p>
 
-              ))
+                                Showing{" "}
 
-            ) : (
+                                <strong>
+                                    {filteredItems.length}
+                                </strong>{" "}
 
-              <div className="empty-search">
+                                {filteredItems.length === 1
+                                    ? "item"
+                                    : "items"}
 
-                <FaSearch />
+                                {query && (
+                                    <>
+                                        {" "}for{" "}
+                                        <strong>
+                                            "{query}"
+                                        </strong>
+                                    </>
+                                )}
 
-                <h2>No matching items found</h2>
+                            </p>
 
-                <p>
+                        </div>
 
-                  Try another keyword.
+                    )}
 
-                </p>
 
-              </div>
+                    {/* ===========================
+                        LOADING
+                    =========================== */}
 
-            )}
+                    {loading && (
 
-          </div>
+                        <div className="search-loading">
 
-        </div>
+                            <div className="search-spinner"></div>
 
-      </section>
+                            <p>
+                                Finding items...
+                            </p>
 
-      <Footer />
+                        </div>
 
-    </>
-  );
+                    )}
+
+
+                    {/* ===========================
+                        ERROR
+                    =========================== */}
+
+                    {!loading && error && (
+
+                        <div className="empty-search">
+
+                            <FaSearch />
+
+                            <h2>
+                                Unable to load items
+                            </h2>
+
+                            <p>
+                                {error}
+                            </p>
+
+                        </div>
+
+                    )}
+
+
+                    {/* ===========================
+                        RESULTS
+                    =========================== */}
+
+                    {!loading &&
+                        !error &&
+                        filteredItems.length > 0 && (
+
+                            <div className="results-grid">
+
+                                {filteredItems.map((item) => {
+
+                                    const imageUrl =
+                                        getImageUrl(item);
+
+
+                                    return (
+
+                                        <motion.div
+                                            key={item._id}
+                                            className="result-card"
+                                            initial={{
+                                                opacity: 0,
+                                                y: 20
+                                            }}
+                                            animate={{
+                                                opacity: 1,
+                                                y: 0
+                                            }}
+                                            whileHover={{
+                                                y: -8
+                                            }}
+                                            transition={{
+                                                duration: 0.25
+                                            }}
+                                        >
+
+
+                                            {/* IMAGE */}
+
+                                            {imageUrl ? (
+
+                                                <img
+                                                    src={imageUrl}
+                                                    alt={item.title}
+                                                />
+
+                                            ) : (
+
+                                                <div className="result-image-placeholder">
+
+                                                    <FaSearch />
+
+                                                    <span>
+                                                        No image available
+                                                    </span>
+
+                                                </div>
+
+                                            )}
+
+
+                                            <div className="card-content">
+
+
+                                                {/* STATUS */}
+
+                                                <span
+                                                    className={
+                                                        item.type === "lost"
+                                                            ? "lost-badge"
+                                                            : "found-badge"
+                                                    }
+                                                >
+
+                                                    {item.type === "lost"
+                                                        ? "Lost"
+                                                        : "Found"}
+
+                                                </span>
+
+
+                                                {/* TITLE */}
+
+                                                <h3>
+                                                    {item.title}
+                                                </h3>
+
+
+                                                {/* CATEGORY */}
+
+                                                <p className="result-category">
+                                                    {item.category}
+                                                </p>
+
+
+                                                {/* DESCRIPTION */}
+
+                                                {item.description && (
+
+                                                    <p className="result-description">
+
+                                                        {item.description.length > 100
+                                                            ? `${item.description.substring(0, 100)}...`
+                                                            : item.description}
+
+                                                    </p>
+
+                                                )}
+
+
+                                                {/* INFO */}
+
+                                                <div className="card-info">
+
+                                                    <span>
+
+                                                        <FaMapMarkerAlt />
+
+                                                        <span>
+                                                            {item.location || "Unknown location"}
+                                                        </span>
+
+                                                    </span>
+
+
+                                                    <span>
+
+                                                        <FaCalendarAlt />
+
+                                                        <span>
+                                                            {formatDate(item)}
+                                                        </span>
+
+                                                    </span>
+
+                                                </div>
+
+
+                                                {/* DETAILS */}
+
+                                                <button
+                                                    className="details-btn"
+                                                    onClick={() =>
+                                                        handleViewDetails(item)
+                                                    }
+                                                    type="button"
+                                                >
+
+                                                    View Details
+
+                                                </button>
+
+                                            </div>
+
+                                        </motion.div>
+
+                                    );
+
+                                })}
+
+                            </div>
+
+                        )}
+
+
+                    {/* ===========================
+                        EMPTY STATE
+                    =========================== */}
+
+                    {!loading &&
+                        !error &&
+                        filteredItems.length === 0 && (
+
+                            <div className="empty-search">
+
+                                <FaSearch />
+
+                                <h2>
+                                    No matching items found
+                                </h2>
+
+                                <p>
+                                    Try a different keyword or adjust your filters.
+                                </p>
+
+
+                                {(query ||
+                                    category !== "All Categories" ||
+                                    type !== "All") && (
+
+                                    <button
+                                        className="clear-filters-btn empty-clear-btn"
+                                        onClick={clearFilters}
+                                        type="button"
+                                    >
+
+                                        <FaTimes />
+
+                                        Clear Search & Filters
+
+                                    </button>
+
+                                )}
+
+                            </div>
+
+                        )}
+
+                </div>
+
+            </section>
+
+
+            <Footer />
+
+        </>
+    );
 
 }

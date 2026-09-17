@@ -1,6 +1,6 @@
 import "./navbar.css";
 
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 
 import { useState, useEffect, useRef } from "react";
 
@@ -16,6 +16,11 @@ import {
     FaSignOutAlt
 } from "react-icons/fa";
 
+import {
+    getUnreadNotificationCount
+} from "../../services/notificationService";
+
+
 export default function Navbar() {
 
     const [sticky, setSticky] = useState(false);
@@ -23,28 +28,32 @@ export default function Navbar() {
     const [profileOpen, setProfileOpen] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
 
+    const [user, setUser] = useState(() => {
+
+        const storedUser = localStorage.getItem("user");
+
+        if (!storedUser) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(storedUser);
+        } catch (error) {
+            console.error("Unable to read user:", error);
+            return null;
+        }
+
+    });
+
+    const [unreadCount, setUnreadCount] = useState(0);
+
     const reportRef = useRef(null);
     const profileRef = useRef(null);
 
     const navigate = useNavigate();
-
-
-    const [user, setUser] = useState(() => {
-
-    const storedUser = localStorage.getItem("user");
-
-    if (!storedUser) {
-        return null;
-    }
-
-    try {
-        return JSON.parse(storedUser);
-    } catch (error) {
-        console.error("Unable to read user:", error);
-        return null;
-    }
-
-});
+    const location = useLocation();
+    const isProfilePage = location.pathname === "/profile";
+    const isSettingsPage = location.pathname === "/settings";
 
 
     /*
@@ -53,17 +62,105 @@ export default function Navbar() {
     useEffect(() => {
 
         const handleScroll = () => {
-
             setSticky(window.scrollY > 20);
-
         };
 
         window.addEventListener("scroll", handleScroll);
 
         return () => {
-
             window.removeEventListener("scroll", handleScroll);
+        };
 
+    }, []);
+
+
+    /*
+     * Keep navbar user state synced
+     */
+    useEffect(() => {
+
+        const handleStorageChange = () => {
+
+            const storedUser =
+                localStorage.getItem("user");
+
+            if (!storedUser) {
+                setUser(null);
+                return;
+            }
+
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (error) {
+                console.error(
+                    "Unable to read user:",
+                    error
+                );
+
+                setUser(null);
+            }
+
+        };
+
+        window.addEventListener(
+            "storage",
+            handleStorageChange
+        );
+
+        return () => {
+            window.removeEventListener(
+                "storage",
+                handleStorageChange
+            );
+        };
+
+    }, []);
+
+
+    /*
+     * Fetch unread notifications
+     */
+    useEffect(() => {
+
+        let interval;
+
+        const fetchUnreadCount = async () => {
+
+            const token =
+                localStorage.getItem("token");
+
+            if (!token) {
+                setUnreadCount(0);
+                return;
+            }
+
+            const response =
+                await getUnreadNotificationCount();
+
+            if (response.success) {
+                setUnreadCount(
+                    response.count || 0
+                );
+            }
+
+        };
+
+
+        fetchUnreadCount();
+
+
+        /*
+         * Check periodically so the red badge
+         * updates when a new claim arrives.
+         */
+        interval = setInterval(
+            fetchUnreadCount,
+            10000
+        );
+
+
+        return () => {
+            clearInterval(interval);
         };
 
     }, []);
@@ -80,28 +177,28 @@ export default function Navbar() {
                 reportRef.current &&
                 !reportRef.current.contains(e.target)
             ) {
-
                 setReportOpen(false);
-
             }
 
             if (
                 profileRef.current &&
                 !profileRef.current.contains(e.target)
             ) {
-
                 setProfileOpen(false);
-
             }
 
         };
 
-        document.addEventListener("mousedown", handleClick);
+        document.addEventListener(
+            "mousedown",
+            handleClick
+        );
 
         return () => {
-
-            document.removeEventListener("mousedown", handleClick);
-
+            document.removeEventListener(
+                "mousedown",
+                handleClick
+            );
         };
 
     }, []);
@@ -113,10 +210,10 @@ export default function Navbar() {
     const handleLogout = () => {
 
         localStorage.removeItem("user");
-
         localStorage.removeItem("token");
 
         setUser(null);
+        setUnreadCount(0);
 
         setProfileOpen(false);
 
@@ -128,14 +225,12 @@ export default function Navbar() {
     return (
 
         <nav
-
-            className={`navbar navbar-expand-lg custom-navbar ${
-                sticky
-                    ? "navbar-scrolled"
-                    : ""
-            }`}
-
-        >
+    className={`navbar navbar-expand-lg custom-navbar ${
+        sticky ? "navbar-scrolled" : ""
+    } ${
+        isProfilePage || isSettingsPage ? "profile-navbar" : ""
+    }`}
+>
 
             <div className="container-fluid px-5">
 
@@ -329,7 +424,9 @@ export default function Navbar() {
 
                                 onClick={() => {
 
-                                    setReportOpen(!reportOpen);
+                                    setReportOpen(
+                                        !reportOpen
+                                    );
 
                                     setProfileOpen(false);
 
@@ -490,11 +587,28 @@ export default function Navbar() {
 
                                     className="icon-btn notification-btn"
 
+                                    onClick={() =>
+                                        setMobileOpen(false)
+                                    }
+
                                 >
 
                                     <FaBell/>
 
-                                    <span className="notification-dot"></span>
+
+                                    {/* REAL UNREAD BADGE */}
+
+                                    {unreadCount > 0 && (
+
+                                        <span className="notification-dot">
+
+                                            {unreadCount > 99
+                                                ? "99+"
+                                                : unreadCount}
+
+                                        </span>
+
+                                    )}
 
                                 </Link>
 
@@ -517,7 +631,9 @@ export default function Navbar() {
 
                                     onClick={() => {
 
-                                        setProfileOpen(!profileOpen);
+                                        setProfileOpen(
+                                            !profileOpen
+                                        );
 
                                         setReportOpen(false);
 
@@ -620,11 +736,18 @@ export default function Navbar() {
 
 
                                                                 <button
-                                                                  onClick={handleLogout}
-                                                               >
-                                                               <FaSignOutAlt />
-                                                                   Logout
-                                                               </button>
+
+                                                                    onClick={
+                                                                        handleLogout
+                                                                    }
+
+                                                                >
+
+                                                                    <FaSignOutAlt />
+
+                                                                    Logout
+
+                                                                </button>
 
                                                             </div>
 

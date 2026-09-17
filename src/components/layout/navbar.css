@@ -290,24 +290,32 @@ position:relative;
 
 }
 
-.notification-dot{
+.notification-dot {
+    position: absolute;
+    top: -5px;
+    right: -7px;
 
-position:absolute;
+    min-width: 17px;
+    height: 17px;
 
-top:8px;
+    padding: 0 4px;
 
-right:8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-width:8px;
+    border-radius: 999px;
 
-height:8px;
+    background: #ff4d6d;
+    color: white;
 
-border-radius:50%;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
 
-background:#ef4444;
+    border: 2px solid #0b1024;
 
-border:2px solid #0f172a;
-
+    box-sizing: border-box;
 }
 
 .custom-dropdown,
@@ -550,4 +558,55 @@ height:38px;
 .profile-dropdown .dropdown-links button:hover {
     background: rgba(255, 107, 107, 0.12);
     color: #ff8585;
+}
+
+
+
+/* =========================================
+   PROFILE PAGE NAVBAR
+   Only affects /profile
+========================================= */
+
+.profile-navbar {
+    background: rgba(15, 23, 42, 0.96) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.18);
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+}
+
+/* Keep the navbar visually connected to the profile page */
+.profile-navbar .logo-find,
+.profile-navbar .logo-it {
+    color: #f8fafc;
+}
+
+.profile-navbar .logo-icon {
+    color: #8b5cf6;
+}
+
+.profile-navbar .nav-link,
+.profile-navbar .report-btn,
+.profile-navbar .icon-btn {
+    color: #e2e8f0;
+}
+
+.profile-navbar .nav-link:hover,
+.profile-navbar .report-btn:hover,
+.profile-navbar .icon-btn:hover {
+    color: #a78bfa;
+}
+
+.profile-navbar .nav-link.active {
+    color: #a78bfa;
+}
+
+.profile-navbar .nav-link.active::after {
+    background: #8b5cf6;
+}
+
+/* Keep dropdowns readable */
+.profile-navbar .custom-dropdown,
+.profile-navbar .profile-dropdown {
+    box-shadow: 0 15px 40px rgba(15, 23, 42, 0.18);
 }

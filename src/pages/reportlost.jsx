@@ -338,6 +338,7 @@ export default function ReportLost() {
                     Accessories
 
                   </option>
+                  <option>Others</option>
 
                 </select>
 

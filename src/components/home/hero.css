@@ -519,3 +519,7 @@ scale(1);
     border-color:rgba(139,92,246,.35);
 
 }
+.category-card {
+    text-decoration: none;
+    color: inherit;
+}

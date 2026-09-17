@@ -1,259 +1,317 @@
 import "./latestfound.css";
-import foundItems from "./founddata";
 
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-import ItemModal from "../modal/itemmodal";
-
 import {
-  FaHeart,
-  FaRegHeart,
-  FaMapMarkerAlt,
-  FaUser,
-  FaArrowRight
+    FaHeart,
+    FaRegHeart,
+    FaMapMarkerAlt,
+    FaUser,
+    FaArrowRight
 } from "react-icons/fa";
+
+import { getFoundItems } from "../../services/itemService";
+
+import { useNavigate } from "react-router-dom";
+
+
+const API_URL = "http://localhost:5001";
+
 
 export default function LatestFound() {
 
-  const [selectedItem, setSelectedItem] = useState(null);
+    const navigate = useNavigate();
 
-  const [favorites, setFavorites] = useState([]);
+    const [foundItems, setFoundItems] = useState([]);
 
-  const toggleFavorite = (id) => {
+    const [favorites, setFavorites] = useState([]);
 
-    if (favorites.includes(id)) {
+    const [loading, setLoading] = useState(true);
 
-      setFavorites(favorites.filter((item) => item !== id));
 
-    } else {
+    useEffect(() => {
 
-      setFavorites([...favorites, id]);
+        const fetchFoundItems = async () => {
 
+            try {
+
+                const response = await getFoundItems();
+
+                if (response.success) {
+
+                    const latestItems =
+                        (response.foundItems || [])
+                            .sort(
+                                (a, b) =>
+                                    new Date(b.createdAt) -
+                                    new Date(a.createdAt)
+                            )
+                            .slice(0, 3);
+
+                    setFoundItems(latestItems);
+
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+            } finally {
+
+                setLoading(false);
+
+            }
+
+        };
+
+
+        fetchFoundItems();
+
+    }, []);
+
+
+    const toggleFavorite = (id) => {
+
+        setFavorites((prev) =>
+            prev.includes(id)
+                ? prev.filter((item) => item !== id)
+                : [...prev, id]
+        );
+
+    };
+
+
+    const getImageUrl = (image) => {
+
+        if (!image) {
+            return "/placeholder.png";
+        }
+
+        if (image.startsWith("http")) {
+            return image;
+        }
+
+        return `${API_URL}${image}`;
+
+    };
+
+
+    // const formatDate = (date) => {
+
+    //     if (!date) {
+    //         return "Recently";
+    //     }
+
+    //     return new Date(date).toLocaleDateString(
+    //         "en-IN",
+    //         {
+    //             day: "numeric",
+    //             month: "short",
+    //             year: "numeric"
+    //         }
+    //     );
+
+    // };
+
+
+    if (loading) {
+        return null;
     }
 
-  };
 
-  return (
+    return (
 
-    <section className="latest-found">
+        <section className="latest-found">
 
-      <div className="container">
+            <div className="container">
 
-        {/* Header */}
+                <motion.div
+                    className="found-section-header"
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: .7 }}
+                    viewport={{ once: true }}
+                >
 
-        <motion.div
-
-          className="found-section-header"
-
-          initial={{ opacity: 0, y: 40 }}
-
-          whileInView={{ opacity: 1, y: 0 }}
-
-          transition={{ duration: .7 }}
-
-          viewport={{ once: true }}
-
-        >
-
-          <span className="section-tag green">
-
-            Recently Found
-
-          </span>
-
-          <h2>
-
-            Latest Found Items
-
-          </h2>
-
-          <p>
-
-            Browse the latest items reported by students
-            waiting to be claimed.
-
-          </p>
-
-        </motion.div>
-
-        {/* Cards */}
-
-        <div className="found-grid">
-
-          {
-
-            foundItems.map((item,index)=>(
-
-              <motion.div
-
-                key={item.id}
-
-                className="found-card"
-
-                initial={{opacity:0,y:50}}
-
-                whileInView={{opacity:1,y:0}}
-
-                transition={{delay:index*.15}}
-
-                viewport={{once:true}}
-
-                whileHover={{y:-10}}
-
-                onClick={()=>setSelectedItem(item)}
-
-              >
-
-                <div className="image-box">
-
-                  <img
-
-                    src={item.image}
-
-                    alt={item.title}
-
-                  />
-
-                  <button
-
-                    className="favorite-btn found"
-
-                    onClick={(e)=>{
-
-                      e.stopPropagation();
-
-                      toggleFavorite(item.id);
-
-                    }}
-
-                  >
-
-                    {
-
-                      favorites.includes(item.id)
-
-                      ?
-
-                      <FaHeart/>
-
-                      :
-
-                      <FaRegHeart/>
-
-                    }
-
-                  </button>
-
-                  <span className="found-status">
-
-                    FOUND
-
-                  </span>
-
-                </div>
-
-                <div className="found-content">
-
-                  <h3>
-
-                    {item.title}
-
-                  </h3>
-
-                  <div className="info">
-
-                    <span>
-
-                      <FaMapMarkerAlt/>
-
-                      {item.location}
-
+                    <span className="section-tag green">
+                        Recently Found
                     </span>
 
-                    <span>
+                    <h2>
+                        Latest Found Items
+                    </h2>
 
-                      <FaUser/>
+                    <p>
+                        Browse the latest items reported by students
+                        waiting to be claimed.
+                    </p>
 
-                      {item.finder}
+                </motion.div>
 
-                    </span>
 
-                  </div>
+                {foundItems.length > 0 ? (
 
-                  <div className="found-category">
+                    <div className="found-grid">
 
-                    {item.category}
+                        {foundItems.map((item, index) => (
 
-                  </div>
+                            <motion.div
+                                key={item._id}
+                                className="found-card"
+                                initial={{
+                                    opacity: 0,
+                                    y: 50
+                                }}
+                                whileInView={{
+                                    opacity: 1,
+                                    y: 0
+                                }}
+                                transition={{
+                                    delay: index * .15
+                                }}
+                                viewport={{ once: true }}
+                                whileHover={{ y: -10 }}
+                                onClick={() =>
+                                    navigate(
+                                        `/item/${item._id}?type=found`
+                                    )
+                                }
+                            >
 
-                  <button
+                                <div className="image-box">
 
-                    onClick={(e)=>{
+                                    <img
+                                        src={getImageUrl(item.image)}
+                                        alt={item.title}
+                                    />
 
-                      e.stopPropagation();
 
-                      setSelectedItem(item);
+                                    <button
+                                        className="favorite-btn found"
+                                        onClick={(e) => {
 
+                                            e.stopPropagation();
+
+                                            toggleFavorite(item._id);
+
+                                        }}
+                                    >
+
+                                        {favorites.includes(item._id)
+                                            ? <FaHeart />
+                                            : <FaRegHeart />
+                                        }
+
+                                    </button>
+
+
+                                    <span className="found-status">
+                                        FOUND
+                                    </span>
+
+                                </div>
+
+
+                                <div className="found-content">
+
+                                    <h3>
+                                        {item.title}
+                                    </h3>
+
+
+                                    <div className="info">
+
+                                        <span>
+                                            <FaMapMarkerAlt />
+                                            {item.location}
+                                        </span>
+
+                                        <span>
+                                            <FaUser />
+                                            {item.reportedBy?.name ||
+                                                "FindIt User"}
+                                        </span>
+
+                                    </div>
+
+
+                                    <div className="found-category">
+                                        {item.category}
+                                    </div>
+
+
+                                    <button
+                                        onClick={(e) => {
+
+                                            e.stopPropagation();
+
+                                            navigate(
+                                                `/item/${item._id}?type=found`
+                                            );
+
+                                        }}
+                                    >
+
+                                        View Details
+
+                                        <FaArrowRight />
+
+                                    </button>
+
+                                </div>
+
+                            </motion.div>
+
+                        ))}
+
+                    </div>
+
+                ) : (
+
+                    <div className="browse-empty">
+
+                        <h3>
+                            No found items yet
+                        </h3>
+
+                        <p>
+                            Be the first to report a found item.
+                        </p>
+
+                    </div>
+
+                )}
+
+
+                <motion.div
+                    className="view-all-container"
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{
+                        opacity: 1,
+                        y: 0
                     }}
+                    transition={{ duration: .6 }}
+                    viewport={{ once: true }}
+                >
 
-                  >
+                    <button
+                        className="view-all-found-btn"
+                        onClick={() => navigate("/browse?type=found")}
+                    >
 
-                    Contact Finder
+                        View All Found Items
 
-                    <FaArrowRight/>
+                        <FaArrowRight />
 
-                  </button>
+                    </button>
 
-                </div>
+                </motion.div>
 
-              </motion.div>
+            </div>
 
-            ))
+        </section>
 
-          }
-
-        </div>
-
-        {/* View All */}
-
-        <motion.div
-
-          className="view-all-container"
-
-          initial={{opacity:0,y:30}}
-
-          whileInView={{opacity:1,y:0}}
-
-          transition={{duration:.6}}
-
-          viewport={{once:true}}
-
-        >
-
-          <button className="view-all-found-btn">
-
-            View All Found Items
-
-            <FaArrowRight/>
-
-          </button>
-
-        </motion.div>
-
-      </div>
-
-      <ItemModal
-
-        item={selectedItem}
-
-        onClose={()=>setSelectedItem(null)}
-
-      />
-
-    </section>
-
-  );
+    );
 
 }

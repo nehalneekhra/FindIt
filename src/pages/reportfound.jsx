@@ -243,6 +243,7 @@ export default function ReportFound() {
                   <option>Books</option>
                   <option>Keys</option>
                   <option>Accessories</option>
+                  <option>Others</option>
 
                 </select>
 
