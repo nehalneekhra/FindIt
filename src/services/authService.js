@@ -49,3 +49,25 @@ export const loginUser = async (userData) => {
 
     }
 };
+
+export const googleLoginUser = async (idToken) => {
+    try {
+        const response = await fetch(`${BASE_URL}/google`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ idToken }),
+        });
+
+        return await response.json();
+
+    } catch (error) {
+        console.error(error);
+
+        return {
+            success: false,
+            message: "Unable to connect to server"
+        };
+    }
+};

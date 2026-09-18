@@ -1,5 +1,11 @@
-import { loginUser } from "../services/authService";
+import {
+    loginUser,
+    googleLoginUser
+} from "../services/authService";
 import "../components/login/login.css";
+
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "../firebase";
 
 import Navbar from "../components/layout/navbar";
 import Footer from "../components/footer/footer";
@@ -25,6 +31,44 @@ FaGoogle
 
 export default function Login(){
     const navigate = useNavigate();
+
+    const handleGoogleLogin = async () => {
+    try {
+        const provider = new GoogleAuthProvider();
+
+        const result = await signInWithPopup(auth, provider);
+
+        const idToken = await result.user.getIdToken();
+
+        const response = await googleLoginUser(idToken);
+
+        if (response.success) {
+
+            localStorage.setItem("token", response.token);
+
+            localStorage.setItem(
+                "user",
+                JSON.stringify(response.user)
+            );
+
+            alert("Google Login Successful!");
+
+            navigate("/");
+
+        } else {
+
+            alert(response.message);
+
+        }
+
+    } catch (error) {
+
+        console.error("Google Login Error:", error);
+
+        alert("Google Login Failed. Please try again.");
+
+    }
+};
 
 const[showPassword,setShowPassword]=useState(false);
 
@@ -332,18 +376,13 @@ showPassword
                 </div>
 
                 <button
-
-                    type="button"
-
-                    className="google-btn"
-
-                >
-
-                    <FaGoogle/>
-
-                    Continue with Google
-
-                </button>
+    type="button"
+    className="google-btn"
+    onClick={handleGoogleLogin}
+>
+    <FaGoogle/>
+    Continue with Google
+</button>
 
                 <div className="signup-link">
 
