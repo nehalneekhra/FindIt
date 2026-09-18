@@ -828,21 +828,19 @@ export default function Dashboard() {
 
             if (editingItem.reportType === "lost") {
 
-                response = await updateLostItem(
-                    editingItem._id,
-                    user._id,
-                    formData
-                );
+    response = await updateLostItem(
+        editingItem._id,
+        formData
+    );
 
-            } else {
+} else {
 
-                response = await updateFoundItem(
-                    editingItem._id,
-                    user._id,
-                    formData
-                );
+    response = await updateFoundItem(
+        editingItem._id,
+        formData
+    );
 
-            }
+}
 
 
             if (!response.success) {
