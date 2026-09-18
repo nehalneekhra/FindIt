@@ -95,12 +95,12 @@ export default function BrowseCard({ item, type }) {
      * did not upload an image.
      */
     const imageSrc =
-        item.image &&
-        item.image.trim() !== ""
-            ? item.image.startsWith("http")
-                ? item.image
-                : `http://localhost:5001${item.image}`
-            : "/placeholder-item.png";
+    item.image &&
+    item.image.trim() !== ""
+        ? item.image.startsWith("http")
+            ? item.image
+            : `${import.meta.env.VITE_API_URL}${item.image}`
+        : "/placeholder-item.png";
 
 
     /*

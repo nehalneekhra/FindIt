@@ -19,7 +19,7 @@ export default function ItemModal({ item, type, onClose }) {
         item.image && item.image.trim() !== ""
             ? item.image.startsWith("http")
                 ? item.image
-                : `http://localhost:5001${item.image}`
+                : `${import.meta.env.VITE_API_URL}${item.image}`
             : "/placeholder-item.png";
 
 

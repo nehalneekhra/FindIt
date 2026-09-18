@@ -261,7 +261,7 @@ export default function Search() {
         }
 
 
-        return `http://localhost:5001${item.image}`;
+        return `${import.meta.env.VITE_API_URL}${item.image}`;
 
     };
 

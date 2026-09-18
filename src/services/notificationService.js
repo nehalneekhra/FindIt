@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5001/api/notifications";
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api/notifications`;
 
 const getToken = () => {
     return localStorage.getItem("token");
