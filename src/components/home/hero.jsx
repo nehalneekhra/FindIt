@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import "./Hero.css";
+import "./hero.css";
 
 export default function Hero() {
   return (
