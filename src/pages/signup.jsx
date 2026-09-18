@@ -1,4 +1,14 @@
-import { signupUser } from "../services/authService";
+import {
+    signupUser,
+    googleLoginUser
+} from "../services/authService";
+
+import {
+    signInWithPopup,
+    GoogleAuthProvider
+} from "firebase/auth";
+
+import { auth } from "../firebase";
 import "../components/signup/signup.css";
 
 import Navbar from "../components/layout/navbar";
@@ -21,7 +31,42 @@ import {
 } from "react-icons/fa";
 
 export default function Signup() {
+
   const navigate = useNavigate();
+
+
+  const handleGoogleSignup = async () => {
+    try {
+        const provider = new GoogleAuthProvider();
+
+        const result = await signInWithPopup(auth, provider);
+
+        const idToken = await result.user.getIdToken();
+
+        const response = await googleLoginUser(idToken);
+
+        if (response.success) {
+            localStorage.setItem("token", response.token);
+
+            localStorage.setItem(
+                "user",
+                JSON.stringify(response.user)
+            );
+
+            alert("Google Signup Successful!");
+
+            navigate("/");
+        } else {
+            alert(response.message);
+        }
+
+    } catch (error) {
+        console.error("Google Signup Error:", error);
+
+        alert("Google Signup Failed. Please try again.");
+    }
+};
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -322,6 +367,7 @@ export default function Signup() {
                 <button
                   type="button"
                   className="google-btn"
+                  onClick={handleGoogleSignup}
                 >
                   <FaGoogle />
                   Continue with Google
